@@ -84,6 +84,7 @@ return {
           ["<C-j>"] = cmp.mapping.select_next_item(cmp_select),
           ['<C-Space>'] = cmp.mapping.complete(),
           ['<C-i>'] = cmp.mapping.confirm { select = true },
+          ['<C-p>'] = cmp.config.disable,
         },
 
         sources = cmp.config.sources {
