@@ -1,0 +1,18 @@
+live_config_reload = true
+
+[font]
+size = 20
+
+[font.normal]
+family = "GeistMono Nerd Font"
+
+[mouse]
+hide_when_typing = true
+
+[window]
+decorations = "None"
+opacity = 0.9
+
+[window.padding]
+x = 10
+y = 10
