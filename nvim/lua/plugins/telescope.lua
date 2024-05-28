@@ -31,7 +31,18 @@ return {
           },
         },
         pickers = {
-          find_files = { prompt_title = false },
+          find_files = {
+            prompt_title = false,
+            hidden = true,
+            find_command = {
+              "rg",
+              "--files",
+              "--hidden",
+             "--glob=!**/dist/*",
+             "--glob=!**/build/*",
+             "--glob=!**/.git/*",
+           }
+          },
           git_files = { prompt_title = false, hidden = true },
         },
       }
