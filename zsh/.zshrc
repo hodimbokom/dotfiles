@@ -37,3 +37,5 @@ alias tmuxl='tmux list-sessions'
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
+eval "$(starship init zsh)"
+
