@@ -1,3 +1,6 @@
 envman/
 yarn
 tmux-*
+.zsh_history
+.zcompdump
+
