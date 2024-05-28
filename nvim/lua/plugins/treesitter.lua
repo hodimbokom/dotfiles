@@ -25,7 +25,7 @@ return {
         sync_install = false,
 	      auto_install = true,
         highlight = { enable = true },
-        indent = { enable = false },
+        indent = { enable = true },
 
         vim.cmd [[autocmd BufNewFile,BufRead *.conf set filetype=tmux]]
       }
