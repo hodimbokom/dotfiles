@@ -32,7 +32,7 @@ return {
         },
         pickers = {
           find_files = { prompt_title = false },
-          git_files = { prompt_title = false },
+          git_files = { prompt_title = false, hidden = true },
         },
       }
       local builtin = require('telescope.builtin')
