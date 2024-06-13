@@ -16,3 +16,23 @@ opacity = 0.9
 [window.padding]
 x = 10
 y = 10
+
+[scrolling]
+history = 12000
+
+[[keyboard.bindings]]
+key = "I"
+mods = "Control | Shift"
+action = "ToggleViMode"
+
+[[keyboard.bindings]]
+key = "U"
+mods = "Control"
+mode = "Vi"
+action = "ScrollHalfPageUp"
+
+[[keyboard.bindings]]
+key = "D"
+mods = "Control"
+mode = "Vi"
+action = "ScrollHalfPageDown"
