@@ -4,7 +4,7 @@ live_config_reload = true
 size = 20
 
 [font.normal]
-family = "GeistMono Nerd Font"
+family = "Hack mono"
 
 [mouse]
 hide_when_typing = true
