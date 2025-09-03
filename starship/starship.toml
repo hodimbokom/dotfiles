@@ -1,4 +1,6 @@
 add_newline = false
+scan_timeout = 10
+right_format = "$time"
 
 [character]
 success_symbol = "[>](bold green)"
@@ -234,3 +236,11 @@ symbol = "terraform "
 
 [zig]
 symbol = "zig "
+
+[cmd_duration]
+min_time = 500
+show_milliseconds = true
+
+[time]
+disabled = false
+format = "[$time]($style)"
