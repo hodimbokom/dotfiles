@@ -40,7 +40,7 @@ return {
 			require('mason').setup()
 			require('mason-lspconfig').setup({
 
-				ensure_installed = { 'lua_ls', 'tsserver', 'marksman' },
+				ensure_installed = { 'lua_ls', 'ts_ls', 'marksman' },
 
 				handlers = {
 					function(server_name)
@@ -56,6 +56,17 @@ return {
 									diagnostics = { globals = { 'vim', 'it', 'describe', 'before_each', 'after_each' } },
 								},
 							},
+						})
+					end,
+
+					['ts_ls'] = function()
+						local lspconfig = require('lspconfig')
+						lspconfig.ts_ls.setup({
+							capabilities = capabilities,
+							on_attach = function(client, _)
+								client.server_capabilities.documentFormattingProvider = false
+								client.server_capabilities.documentRangeFormattingProvider = false
+							end,
 						})
 					end,
 				},
