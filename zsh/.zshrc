@@ -43,7 +43,7 @@ alias tmuxa='tmux attach -t'
 alias tmuxl='tmux list-sessions'
 
 # cat/ls
-alias cat='bat -p'
+alias cat='bat --style=plain'
 alias ls='eza'
 
 
