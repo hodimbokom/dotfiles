@@ -42,9 +42,10 @@ alias tmuxk='tmux kill-session -t'
 alias tmuxa='tmux attach -t'
 alias tmuxl='tmux list-sessions'
 
-# cat/ls
+# bat/eza
 alias cat='bat --style=plain'
 alias ls='eza'
+alias env='env | sort | bat -l ini --style=plain'
 
 
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
