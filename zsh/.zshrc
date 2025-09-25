@@ -47,6 +47,9 @@ alias cat='bat --style=plain'
 alias ls='eza'
 alias env='env | sort | bat -l ini --style=plain'
 
+# jq
+alias jqpp='jq -C . | less -R'
+
 
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -54,5 +57,4 @@ source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 eval "$(starship init zsh)"
 
 
-# Created by `pipx` on 2025-02-27 07:38:38
 export PATH="$PATH:/Users/rukipomoi/.local/bin"
