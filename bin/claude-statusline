@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+command -v jq >/dev/null || exit 0
+input="$(cat)"
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-claude-usage"
+mkdir -p "$(dirname "$cache")"
+
+eval "$(printf '%s' "$input" | jq -r '
+  def n: if . == null then "" else (tonumber | floor | tostring) end;
+  "ctx=\(.context_window.used_percentage | n)",
+  "h5=\(.rate_limits.five_hour.used_percentage | n)",
+  "d7=\(.rate_limits.seven_day.used_percentage | n)"
+')"
+
+color() {
+  if [ -z "$1" ]; then
+    printf '%s' '#6e6a86'
+  elif [ "$1" -ge 80 ]; then
+    printf '%s' '#eb6f92'
+  elif [ "$1" -ge 50 ]; then
+    printf '%s' '#f6c177'
+  else
+    printf '%s' '#b4b1c8'
+  fi
+}
+
+tmux_out=
+plain=
+if [ -n "$ctx" ]; then
+  tmux_out="$tmux_out #[fg=#6e6a86]ctx #[fg=$(color "$ctx")]${ctx}%"
+  plain="$plain ctx ${ctx}%"
+fi
+if [ -n "$h5" ]; then
+  tmux_out="$tmux_out #[fg=#6e6a86]5h #[fg=$(color "$h5")]${h5}%"
+  plain="$plain 5h ${h5}%"
+fi
+if [ -n "$d7" ]; then
+  tmux_out="$tmux_out #[fg=#6e6a86]7d #[fg=$(color "$d7")]${d7}%"
+  plain="$plain 7d ${d7}%"
+fi
+printf '%s' "${tmux_out# }" > "$cache" 2>/dev/null || true
+printf '%s\n' "${plain# }"

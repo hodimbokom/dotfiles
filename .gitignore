@@ -1,10 +1,6 @@
-# This repository is public. Everything here is a deny rule; when you add a tool
-# that keeps state or credentials under ~/.config, add it below before you commit.
-
-# Machine state and caches
 envman/
 yarn
-tmux-*
+/tmux-*
 tmux/plugins/*
 .zsh_history
 .zcompdump
@@ -14,15 +10,10 @@ htop/
 nvim.log
 *.bak
 
-# Tool state that can carry credentials.
-# gh stores its token in the macOS keychain, but hosts.yml records the account
-# and falls back to a plaintext token when secure storage is unavailable.
 gh/
 
-# Machine-local overrides (GitHub account switch aliases, etc.)
 zsh/.zshrc.local
 
-# Catch-alls, so a tool we haven't thought of can't leak on `git add -A`
 .env
 .env.*
 *.pem

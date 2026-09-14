@@ -71,7 +71,12 @@
       "Bash(pnpm publish:*)"
     ],
     "defaultMode": "default",
-    "blockReadsOutsideWorkingDirectories": true
+    "blockReadsOutsideWorkingDirectories": false
   },
-  "theme": "auto"
+  "theme": "auto",
+  "statusLine": {
+    "type": "command",
+    "command": "~/.config/bin/claude-statusline",
+    "refreshInterval": 15
+  }
 }

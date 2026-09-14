@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+if ! cd "$1" 2>/dev/null || ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  printf '#[fg=#6e6a86]none'
+  exit 0
+fi
+
+b="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || b='?'
+gd="$(git rev-parse --path-format=absolute --git-dir)"
+gc="$(git rev-parse --path-format=absolute --git-common-dir)"
+kind=worktree
+[ "$gd" = "$gc" ] && kind=repo
+
+st="$(git status --porcelain 2>/dev/null)"
+if printf '%s' "$st" | grep -q '^.[^ ]'; then
+  state='#[fg=#eb6f92]unstaged'
+elif [ -n "$st" ]; then
+  state='#[fg=#f6c177]staged'
+else
+  state='#[fg=#6e6a86]clean'
+fi
+
+op=
+if git diff --name-only --diff-filter=U 2>/dev/null | grep -q .; then
+  op=' #[fg=#eb6f92]conflict'
+elif [ -d "$(git rev-parse --git-path rebase-merge)" ] || [ -d "$(git rev-parse --git-path rebase-apply)" ]; then
+  op=' #[fg=#eb6f92]rebase'
+elif [ -f "$(git rev-parse --git-path MERGE_HEAD)" ]; then
+  op=' #[fg=#eb6f92]merge'
+elif [ -f "$(git rev-parse --git-path CHERRY_PICK_HEAD)" ]; then
+  op=' #[fg=#eb6f92]cherry'
+fi
+
+sync=
+if git rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
+  counts="$(git rev-list --left-right --count '@{upstream}'...HEAD 2>/dev/null)" || counts=
+  if [ -n "$counts" ]; then
+    behind="${counts%%	*}"
+    ahead="${counts##*	}"
+    [ "$ahead" -gt 0 ] 2>/dev/null && sync="$sync #[fg=#9ccfd8]↑$ahead"
+    [ "$behind" -gt 0 ] 2>/dev/null && sync="$sync #[fg=#f6c177]↓$behind"
+  fi
+fi
+
+main=
+ref="$(git symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null)" || true
+base="${ref#refs/remotes/origin/}"
+[ -n "$base" ] || base=main
+if [ "$b" != "$base" ] && git rev-parse --verify "origin/$base" >/dev/null 2>&1; then
+  n="$(git rev-list --count "HEAD..origin/$base" 2>/dev/null)" || n=0
+  [ "$n" -gt 0 ] 2>/dev/null && main=" #[fg=#c4a7e7]main↓$n"
+fi
+
+printf '#[fg=#6e6a86]%s #[fg=#b4b1c8]%s %s%s%s%s' "$kind" "$b" "$state" "$op" "$sync" "$main"
