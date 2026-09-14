@@ -29,6 +29,11 @@ alias gs='g switch'
 alias ga='g add'
 alias gaa='g add .'
 alias gstat='g status'
+gss() {
+  local b
+  b="$(git branch --format='%(refname:short)' | fzf)" || return
+  git switch "$b"
+}
 
 # dir
 alias doc='$HOME/Documents'
@@ -53,6 +58,16 @@ alias jqpp='jq -C . | less -R'
 
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+export FZF_DEFAULT_COMMAND='fd --hidden --follow --exclude .git'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+export FZF_DEFAULT_OPTS='--layout=reverse --border --info=inline'
+export FZF_TMUX_OPTS='-p 80%,70%'
+export FZF_CTRL_T_OPTS='--preview "bat --style=plain --color=always {} 2>/dev/null || eza -alg {}"'
+export FZF_ALT_C_OPTS='--preview "eza -alg {}"'
+source $(brew --prefix)/opt/fzf/shell/completion.zsh
+source $(brew --prefix)/opt/fzf/shell/key-bindings.zsh
 
 eval "$(starship init zsh)"
 
