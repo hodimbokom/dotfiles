@@ -1,11 +1,37 @@
+# This repository is public. Everything here is a deny rule; when you add a tool
+# that keeps state or credentials under ~/.config, add it below before you commit.
+
+# Machine state and caches
 envman/
 yarn
 tmux-*
 tmux/plugins/*
 .zsh_history
 .zcompdump
+.zsh_sessions/
 raycast
-zsh/.zsh_sessions/
 htop/
 nvim.log
 
+# Tool state that can carry credentials.
+# gh stores its token in the macOS keychain, but hosts.yml records the account
+# and falls back to a plaintext token when secure storage is unavailable.
+gh/
+
+# Catch-alls, so a tool we haven't thought of can't leak on `git add -A`
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*_rsa
+*_dsa
+*_ecdsa
+*_ed25519
+*credential*
+*secret*
+*token*
+*.sqlite
+*.sqlite3
+*.db

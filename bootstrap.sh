@@ -54,5 +54,17 @@ if [ -f "$repo/bin/cctask" ] && [ ! -x "$repo/bin/cctask" ]; then
   echo "chmod  bin/cctask"
 fi
 
+# This repository is public, so scan commits for credentials. Hooks in .git/hooks
+# aren't versioned, hence core.hooksPath pointing at a tracked directory.
+if [ -d "$repo/githooks" ] && git -C "$repo" rev-parse --git-dir >/dev/null 2>&1; then
+  chmod +x "$repo/githooks/pre-commit" 2>/dev/null || true
+  if [ "$(git -C "$repo" config --local --get core.hooksPath || true)" != "githooks" ]; then
+    git -C "$repo" config --local core.hooksPath githooks
+    echo "hooks  core.hooksPath -> githooks"
+  else
+    echo "ok     core.hooksPath already set"
+  fi
+fi
+
 echo
 echo "Done. MCP servers are not linked; run claude/mcp-setup.sh to register them."

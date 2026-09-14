@@ -43,6 +43,22 @@ in [tmux/tmux.conf](tmux/tmux.conf) if you want Alacritty to open itself when yo
 `~/.claude` directory, because Claude keeps generated state and credentials there.
 `~/.claude.json` holds OAuth tokens and is deliberately not tracked.
 
+## Secrets
+
+This repository is public, so nothing here may contain a credential. Two things
+guard that, and both need `bootstrap.sh` to have run:
+
+- [.gitignore](.gitignore) excludes tool state that can carry credentials, such as
+  `gh/`, plus catch-all patterns (`.env`, `*.pem`, `*token*`, and similar) so a tool
+  we haven't thought of can't leak through `git add -A`.
+- [githooks/pre-commit](githooks/pre-commit) scans the lines a commit adds for
+  credential shapes, which covers the case `.gitignore` can't: a key pasted into a
+  file that is tracked. `bootstrap.sh` wires it up with `core.hooksPath`.
+
+When you add a tool that writes to `~/.config`, check whether it keeps state or
+tokens there and add it to `.gitignore` before your next commit. To bypass the hook
+for a false positive, commit once with `--no-verify`.
+
 ## Claude Code workflow
 
 One task = one worktree = one tmux window.
