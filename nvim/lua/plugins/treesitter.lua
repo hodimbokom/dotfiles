@@ -87,7 +87,6 @@ return {
     end,
   },
   {
-    -- Цвет скобок по уровню вложенности. Группы уже есть в rose-pine.
     "HiPhish/rainbow-delimiters.nvim",
     submodules = false,
     event = "BufReadPost",

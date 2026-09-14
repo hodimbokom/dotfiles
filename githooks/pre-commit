@@ -1,13 +1,4 @@
 #!/usr/bin/env bash
-# Block a commit that would publish a credential.
-#
-# .gitignore keeps secret *files* out of this public repository. This catches the
-# other case: a key pasted into a file we do track, such as an export line in
-# .zshrc. It reads only the lines the commit adds.
-#
-# Enabled by bootstrap.sh via core.hooksPath. Override once with:
-#   git commit --no-verify
-
 set -uo pipefail
 
 added="$(git diff --cached --unified=0 --no-color -- . \
@@ -15,11 +6,8 @@ added="$(git diff --cached --unified=0 --no-color -- . \
 
 [ -n "$added" ] || exit 0
 
-# Each entry is "label<TAB>extended regex". Keep patterns anchored to the shape of
-# a real credential so ordinary config text doesn't trip them.
 scan() {
   local label="$1" regex="$2" hit
-  # -e matters: some patterns start with '-' and grep would read them as flags.
   hit="$(printf '%s\n' "$added" | grep -nEi -e "$regex" || true)"
   [ -n "$hit" ] || return 0
   echo "  [$label]"

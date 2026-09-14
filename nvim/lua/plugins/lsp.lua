@@ -35,8 +35,6 @@ return {
       require('fidget').setup()
       require('mason').setup()
 
-      -- Worktrees often have no node_modules. Without a tsserver path, ts_ls
-      -- fails initialize and nvim 0.12 aborts the UI.
       local function find_tsserver(root)
         local function at(dir)
           if not dir or dir == '' then return nil end

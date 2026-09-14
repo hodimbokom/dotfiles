@@ -14,17 +14,14 @@ setopt auto_cd
 bindkey '^I'   autosuggest-accept
 bindkey '^[[Z' complete-word
 
-# aliases
 alias v='nvim'
 alias g='git'
 
-# configs
 alias vt='v ~/.config/tmux'
 alias vz='v ~/.config/zsh'
 alias vv='v ~/.config/nvim'
 alias va='v ~/.config/alacritty'
 
-# git
 alias gs='g switch'
 alias ga='g add'
 alias gaa='g add .'
@@ -35,24 +32,20 @@ gss() {
   git switch "$b"
 }
 
-# dir
 alias doc='$HOME/Documents'
 alias dow='$HOME/Downloads'
 alias pet='$HOME/Documents/work/pets'
 alias dot='$HOME/.config'
 alias work='$HOME/Documents/work'
 
-# tmux
 alias tmuxk='tmux kill-session -t'
 alias tmuxa='tmux attach -t'
 alias tmuxl='tmux list-sessions'
 
-# bat/eza
 alias cat='bat --style=plain'
 alias ls='eza'
 alias env='env | sort | bat -l ini --style=plain'
 
-# jq
 alias jqpp='jq -C . | less -R'
 
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Hide or show a cctask pane. Role is "shell" (bottom-right) or "editor" (nvim, left).
 set -euo pipefail
 
 win="${1:-}"
@@ -53,7 +52,6 @@ stow_hidden() {
   tmux set-option -w -t "$win" "$hidden_opt" "$hid"
 }
 
-# If this role is already stowed, always restore. Do not hunt for another pane to hide.
 if [ -n "$hidden" ]; then
   target="$(claude_pane)"
   [ -n "$target" ] || { tmux display-message "no pane to restore $role into"; exit 1; }
