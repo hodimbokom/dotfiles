@@ -19,6 +19,9 @@ nvim.log
 # and falls back to a plaintext token when secure storage is unavailable.
 gh/
 
+# Machine-local overrides (GitHub account switch aliases, etc.)
+zsh/.zshrc.local
+
 # Catch-alls, so a tool we haven't thought of can't leak on `git add -A`
 .env
 .env.*
