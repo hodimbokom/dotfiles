@@ -1,0 +1,205 @@
+#!/usr/bin/env bash
+#
+# cctask — one task, one worktree, one tmux window.
+#
+#   cctask BAC-123                 create/reuse a worktree and tmux window for BAC-123
+#   cctask BAC-123 feat/BAC-123    same, with an explicit branch name
+#   cctask --dry-run BAC-123       print what would happen, change nothing
+#
+# Worktrees live in ~/.worktrees/<repo>/<task>. The tmux session is named after the
+# repository, the window after the task. Existing branches, worktrees, sessions and
+# windows are reused, never recreated and never deleted.
+
+set -euo pipefail
+
+WORKTREE_ROOT="${CCTASK_WORKTREE_ROOT:-$HOME/.worktrees}"
+
+dry_run=0
+task=""
+branch=""
+
+die() {
+  echo "cctask: $*" >&2
+  exit 1
+}
+
+usage() {
+  sed -n '3,12p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+run() {
+  if [ "$dry_run" -eq 1 ]; then
+    printf 'would run:'
+    printf ' %q' "$@"
+    printf '\n'
+  else
+    "$@"
+  fi
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run) dry_run=1 ;;
+    -h|--help) usage; exit 0 ;;
+    -*)        die "unknown option: $1" ;;
+    *)
+      if   [ -z "$task" ];   then task="$1"
+      elif [ -z "$branch" ]; then branch="$1"
+      else die "unexpected argument: $1"
+      fi
+      ;;
+  esac
+  shift
+done
+
+[ -n "$task" ] || { usage >&2; exit 2; }
+
+# Task name becomes a directory, a branch and a tmux window name, so keep it tame.
+case "$task" in
+  *[!A-Za-z0-9._-]*) die "task '$task' may only contain letters, digits, '.', '_' and '-'" ;;
+  ""|.|..)           die "invalid task name: '$task'" ;;
+esac
+
+command -v git >/dev/null || die "git not found"
+command -v tmux >/dev/null || die "tmux not found"
+
+# --- repository ---------------------------------------------------------------
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" \
+  || die "not inside a git repository"
+
+# From a worktree, git rev-parse --show-toplevel gives the worktree, not the main
+# checkout. Anchor everything on the main checkout so nested worktrees can't happen.
+common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"
+main_root="$(cd "$(dirname "$common_dir")" && pwd)"
+[ -d "$main_root/.git" ] || main_root="$repo_root"
+
+repo_name="$(basename "$main_root")"
+branch="${branch:-$task}"
+worktree_dir="$WORKTREE_ROOT/$repo_name/$task"
+session="$repo_name"
+
+# --- default branch -----------------------------------------------------------
+
+default_branch=""
+if ref="$(git -C "$main_root" symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null)"; then
+  default_branch="${ref#refs/remotes/origin/}"
+fi
+
+if [ -z "$default_branch" ]; then
+  for candidate in main master develop; do
+    if git -C "$main_root" show-ref --verify --quiet "refs/remotes/origin/$candidate"; then
+      default_branch="$candidate"
+      break
+    fi
+  done
+fi
+
+echo "repo:     $repo_name ($main_root)"
+echo "task:     $task"
+echo "branch:   $branch"
+echo "worktree: $worktree_dir"
+echo "base:     ${default_branch:-<no origin default branch found>}"
+echo
+
+# --- fetch --------------------------------------------------------------------
+
+if git -C "$main_root" remote get-url origin >/dev/null 2>&1; then
+  echo "==> fetching origin"
+  run git -C "$main_root" fetch --prune origin
+else
+  echo "==> no 'origin' remote, skipping fetch"
+fi
+
+# --- worktree -----------------------------------------------------------------
+
+existing_worktree="$(
+  git -C "$main_root" worktree list --porcelain \
+    | awk -v b="refs/heads/$branch" '
+        /^worktree /  { path = substr($0, 10) }
+        /^branch /    { if (substr($0, 8) == b) { print path; exit } }
+      '
+)"
+
+if [ -n "$existing_worktree" ]; then
+  echo "==> reusing worktree already checked out on '$branch': $existing_worktree"
+  worktree_dir="$existing_worktree"
+elif [ -d "$worktree_dir" ]; then
+  echo "==> reusing existing directory $worktree_dir"
+else
+  echo "==> creating worktree"
+  run mkdir -p "$(dirname "$worktree_dir")"
+  if git -C "$main_root" show-ref --verify --quiet "refs/heads/$branch"; then
+    echo "    branch '$branch' exists locally"
+    run git -C "$main_root" worktree add "$worktree_dir" "$branch"
+  elif git -C "$main_root" show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+    echo "    branch '$branch' exists on origin, tracking it"
+    run git -C "$main_root" worktree add --track -b "$branch" "$worktree_dir" "origin/$branch"
+  elif [ -n "$default_branch" ]; then
+    echo "    creating branch '$branch' from origin/$default_branch"
+    run git -C "$main_root" worktree add -b "$branch" "$worktree_dir" "origin/$default_branch"
+  else
+    echo "    creating branch '$branch' from HEAD"
+    run git -C "$main_root" worktree add -b "$branch" "$worktree_dir"
+  fi
+fi
+
+# --- machine-local environment -------------------------------------------------
+
+if [ "$dry_run" -eq 0 ] && [ -d "$worktree_dir" ]; then
+  if [ -f "$worktree_dir/.worktreeinclude" ]; then
+    echo
+    echo "==> this repo has a .worktreeinclude; copying the files it lists"
+    while IFS= read -r entry || [ -n "$entry" ]; do
+      case "$entry" in ""|\#*) continue ;; esac
+      if [ -e "$main_root/$entry" ] && [ ! -e "$worktree_dir/$entry" ]; then
+        mkdir -p "$(dirname "$worktree_dir/$entry")"
+        cp -R "$main_root/$entry" "$worktree_dir/$entry"
+        echo "    copied $entry"
+      fi
+    done < "$worktree_dir/.worktreeinclude"
+  elif compgen -G "$main_root/.env*" >/dev/null 2>&1 && ! compgen -G "$worktree_dir/.env*" >/dev/null 2>&1; then
+    echo
+    echo "note: the main checkout has .env files that this worktree does not."
+    echo "      Nothing was copied. Set up machine-local env yourself if the app needs it."
+  fi
+fi
+
+# --- tmux ---------------------------------------------------------------------
+
+echo
+if [ "$dry_run" -eq 1 ]; then
+  echo "would ensure tmux session '$session' and window '$task' running:"
+  echo "  pane 1: nvim .        (in $worktree_dir)"
+  echo "  pane 2: claude"
+  echo "  pane 3: shell"
+  exit 0
+fi
+
+start_window() {
+  # Large editor pane on the left, Claude above a utility shell on the right.
+  tmux send-keys -t "$session:$task" 'nvim .' C-m
+  tmux split-window -h -p 35 -t "$session:$task" -c "$worktree_dir"
+  tmux send-keys -t "$session:$task" 'claude' C-m
+  tmux split-window -v -p 50 -t "$session:$task" -c "$worktree_dir"
+  tmux select-pane -t "$session:$task".0
+}
+
+if ! tmux has-session -t="$session" 2>/dev/null; then
+  echo "==> creating tmux session '$session' with window '$task'"
+  tmux new-session -d -s "$session" -n "$task" -c "$worktree_dir"
+  start_window
+elif tmux list-windows -t "$session" -F '#{window_name}' | grep -qx "$task"; then
+  echo "==> reusing existing tmux window '$session:$task'"
+else
+  echo "==> adding tmux window '$task' to session '$session'"
+  tmux new-window -t "$session" -n "$task" -c "$worktree_dir"
+  start_window
+fi
+
+if [ -n "${TMUX:-}" ]; then
+  tmux switch-client -t "$session:$task"
+else
+  tmux select-window -t "$session:$task"
+  tmux attach-session -t "$session"
+fi

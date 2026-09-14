@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Link the parts of this repo that cannot simply live in ~/.config.
+#
+# Everything else (zsh, tmux, nvim, alacritty, btop, starship) is read by its tool
+# directly from ~/.config, so it needs no linking. Claude Code reads ~/.claude, and
+# that directory also holds runtime state we deliberately keep out of git, so we
+# link individual files rather than the directory.
+#
+# Safe to re-run.
+
+set -euo pipefail
+
+repo="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+claude_home="$HOME/.claude"
+backup_dir="$HOME/.claude/backups/dotfiles-$(date +%Y%m%d-%H%M%S)"
+
+link() {
+  local src="$repo/$1" dest="$2"
+
+  if [ ! -e "$src" ]; then
+    echo "skip   $dest (missing $src)"
+    return
+  fi
+
+  if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+    echo "ok     $dest"
+    return
+  fi
+
+  # Preserve anything real that is already there before replacing it.
+  if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+    mkdir -p "$backup_dir"
+    mv "$dest" "$backup_dir/$(basename "$dest")"
+    echo "backup $dest -> $backup_dir/$(basename "$dest")"
+  fi
+
+  mkdir -p "$(dirname "$dest")"
+  ln -sfn "$src" "$dest"
+  echo "link   $dest"
+}
+
+mkdir -p "$claude_home/agents"
+
+link claude/CLAUDE.md                      "$claude_home/CLAUDE.md"
+link claude/settings.json                  "$claude_home/settings.json"
+link claude/agents/frontend-implementer.md "$claude_home/agents/frontend-implementer.md"
+link claude/agents/code-reviewer.md        "$claude_home/agents/code-reviewer.md"
+link claude/agents/ui-validator.md         "$claude_home/agents/ui-validator.md"
+
+if [ -f "$repo/bin/cctask" ] && [ ! -x "$repo/bin/cctask" ]; then
+  chmod +x "$repo/bin/cctask"
+  echo "chmod  bin/cctask"
+fi
+
+echo
+echo "Done. MCP servers are not linked; run claude/mcp-setup.sh to register them."

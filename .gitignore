@@ -5,4 +5,8 @@ tmux/plugins/*
 .zsh_history
 .zcompdump
 raycast
+zsh/.zsh_sessions/
+htop/
+nvim.log
+bin/*.local
 
