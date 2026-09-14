@@ -13,6 +13,7 @@
       "Bash(rg:*)",
       "Bash(fd:*)",
       "Bash(jq:*)",
+      "Bash(gh api:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
       "Bash(gh pr diff:*)",

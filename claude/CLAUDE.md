@@ -68,5 +68,7 @@ Reporting the diff is your job. Deciding to publish it is mine.
 
 ## Style
 
+Always reply in Russian. Do not translate code, file paths, git branches, Jira keys, or shell commands.
+
 Be direct. No preamble, no flattery. If something is wrong or I am asking for the wrong thing, say so.
 Prefer the simplest change that fits the existing code over a clever or general one.
