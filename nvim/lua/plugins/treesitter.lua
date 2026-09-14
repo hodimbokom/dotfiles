@@ -17,6 +17,11 @@ return {
         "javascript",
         "typescript",
         "tsx",
+        "jsdoc",
+        "regex",
+        "json",
+        "markdown",
+        "markdown_inline",
         "c",
         "vimdoc",
         "python",
@@ -27,7 +32,6 @@ return {
         "toml",
         "ini",
         "yaml",
-        "tmux",
       })
 
       local group = vim.api.nvim_create_augroup(
@@ -57,6 +61,9 @@ return {
           "javascriptreact",
           "typescript",
           "typescriptreact",
+          "json",
+          "jsonc",
+          "markdown",
           "c",
           "help",
           "python",
@@ -78,5 +85,11 @@ return {
         end,
       })
     end,
+  },
+  {
+    -- Цвет скобок по уровню вложенности. Группы уже есть в rose-pine.
+    "HiPhish/rainbow-delimiters.nvim",
+    submodules = false,
+    event = "BufReadPost",
   },
 }
