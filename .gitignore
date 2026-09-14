@@ -12,6 +12,7 @@ tmux/plugins/*
 raycast
 htop/
 nvim.log
+*.bak
 
 # Tool state that can carry credentials.
 # gh stores its token in the macOS keychain, but hosts.yml records the account
