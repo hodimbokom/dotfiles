@@ -1,8 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "permissions": {
-    "defaultMode": "default",
-    "blockReadsOutsideWorkingDirectories": true,
     "allow": [
       "Read",
       "Glob",
@@ -65,11 +68,9 @@
       "Bash(gh pr merge:*)",
       "Bash(npm publish:*)",
       "Bash(pnpm publish:*)"
-    ]
+    ],
+    "defaultMode": "default",
+    "blockReadsOutsideWorkingDirectories": true
   },
-  "attribution": {
-    "commit": "",
-    "pr": "",
-    "sessionUrl": false
-  }
+  "theme": "auto"
 }
