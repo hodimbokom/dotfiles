@@ -16,6 +16,10 @@ return {
 		vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'InsertLeave' }, {
 			group = lint_augroup,
 			callback = function()
+				local eslint = vim.fn.fnamemodify('./node_modules/.bin/eslint', ':p')
+				if not vim.loop.fs_stat(eslint) and vim.fn.executable('eslint') == 0 then
+					return
+				end
 				lint.try_lint()
 			end,
 		})

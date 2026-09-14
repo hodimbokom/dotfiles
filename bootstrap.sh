@@ -49,10 +49,12 @@ link claude/agents/frontend-implementer.md "$claude_home/agents/frontend-impleme
 link claude/agents/code-reviewer.md        "$claude_home/agents/code-reviewer.md"
 link claude/agents/ui-validator.md         "$claude_home/agents/ui-validator.md"
 
-if [ -f "$repo/bin/cctask" ] && [ ! -x "$repo/bin/cctask" ]; then
-  chmod +x "$repo/bin/cctask"
-  echo "chmod  bin/cctask"
-fi
+for script in "$repo/bin/cctask" "$repo/bin/cctask-toggle-shell"; do
+  if [ -f "$script" ] && [ ! -x "$script" ]; then
+    chmod +x "$script"
+    echo "chmod  bin/$(basename "$script")"
+  fi
+done
 
 # This repository is public, so scan commits for credentials. Hooks in .git/hooks
 # aren't versioned, hence core.hooksPath pointing at a tracked directory.

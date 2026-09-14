@@ -157,6 +157,12 @@ fi
 # --- machine-local environment -------------------------------------------------
 
 if [ "$dry_run" -eq 0 ] && [ -d "$worktree_dir" ]; then
+  # JS tooling (ts_ls, eslint) looks in this checkout's node_modules.
+  # A worktree doesn't get it from git; reuse the main install via a symlink.
+  if [ -d "$main_root/node_modules" ] && [ ! -e "$worktree_dir/node_modules" ]; then
+    ln -s "$main_root/node_modules" "$worktree_dir/node_modules"
+    echo "==> linked node_modules from $main_root"
+  fi
   if [ -f "$worktree_dir/.worktreeinclude" ]; then
     echo
     echo "==> this repo has a .worktreeinclude; copying the files it lists"
@@ -192,14 +198,17 @@ fi
 # thing. IDs ('@3', '%7') have no such problem.
 
 start_window() {
-  local window="$1" editor claude_pane
+  local window="$1" editor claude_pane shell_pane
   editor="$(tmux list-panes -t "$window" -F '#{pane_id}' | head -1)"
 
-  # Large editor pane on the left, Claude above a utility shell on the right.
+  # nvim 40% left, Claude above a toggleable shell on the 60% right.
+  tmux set-option -p -t "$editor" @cctask_role editor
   tmux send-keys -t "$editor" 'nvim .' C-m
-  claude_pane="$(tmux split-window -h -l 35% -t "$editor" -c "$worktree_dir" -P -F '#{pane_id}')"
+  claude_pane="$(tmux split-window -h -l 60% -t "$editor" -c "$worktree_dir" -P -F '#{pane_id}')"
+  tmux set-option -p -t "$claude_pane" @cctask_role claude
   tmux send-keys -t "$claude_pane" 'claude' C-m
-  tmux split-window -v -l 50% -t "$claude_pane" -c "$worktree_dir"
+  shell_pane="$(tmux split-window -v -l 50% -t "$claude_pane" -c "$worktree_dir" -P -F '#{pane_id}')"
+  tmux set-option -p -t "$shell_pane" @cctask_role shell
   tmux select-pane -t "$editor"
 }
 
