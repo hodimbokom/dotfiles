@@ -1,34 +1,82 @@
 return {
-	{
-		'nvim-treesitter/nvim-treesitter',
-		build = ':TSUpdate',
-		config = function()
-			local configs = require('nvim-treesitter.configs')
+  {
+    "nvim-treesitter/nvim-treesitter",
+    branch = "main",
+    lazy = false,
+    build = ":TSUpdate",
 
-			configs.setup({
-				ensure_installed = {
-					'bash',
-					'lua',
-					'javascript',
-					'typescript',
-					'c',
-					'vimdoc',
-					'python',
-					'go',
-					'rust',
-					'css',
-					'html',
-					'toml',
-					'ini',
-					'yaml',
-				},
-				sync_install = false,
-				auto_install = true,
-				highlight = { enable = true },
-				indent = { enable = true },
+    config = function()
+      local treesitter = require("nvim-treesitter")
 
-				vim.cmd([[autocmd BufNewFile,BufRead *.conf set filetype=tmux]]),
-			})
-		end,
-	},
+      treesitter.setup({})
+
+      treesitter.install({
+        "bash",
+        "zsh",
+        "lua",
+        "javascript",
+        "typescript",
+        "tsx",
+        "c",
+        "vimdoc",
+        "python",
+        "go",
+        "rust",
+        "css",
+        "html",
+        "toml",
+        "ini",
+        "yaml",
+        "tmux",
+      })
+
+      local group = vim.api.nvim_create_augroup(
+        "TreesitterConfig",
+        { clear = true }
+      )
+
+      vim.api.nvim_create_autocmd(
+        { "BufNewFile", "BufRead" },
+        {
+          group = group,
+          pattern = "*.conf",
+          callback = function()
+            vim.bo.filetype = "tmux"
+          end,
+        }
+      )
+
+      vim.api.nvim_create_autocmd("FileType", {
+        group = group,
+        pattern = {
+          "sh",
+          "bash",
+          "zsh",
+          "lua",
+          "javascript",
+          "javascriptreact",
+          "typescript",
+          "typescriptreact",
+          "c",
+          "help",
+          "python",
+          "go",
+          "rust",
+          "css",
+          "html",
+          "toml",
+          "dosini",
+          "yaml",
+          "tmux",
+        },
+
+        callback = function(args)
+          pcall(vim.treesitter.start, args.buf)
+
+          vim.bo[args.buf].indentexpr =
+            "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
+      })
+    end,
+  },
 }

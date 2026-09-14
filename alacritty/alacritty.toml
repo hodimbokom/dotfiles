@@ -1,10 +1,10 @@
-live_config_reload = true
+general.live_config_reload = true
 
 [font]
-size = 20
+size = 14
 
 [font.normal]
-family = "Hack Nerd Font"
+family = "Menlo"
 style = "Regular"
 
 [mouse]
