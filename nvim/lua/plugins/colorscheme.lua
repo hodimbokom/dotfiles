@@ -13,9 +13,11 @@ return {
         disable_background = true,
         dim_inactive_windows = false,
 
-        -- Фон не меняем. Расщепляем токены, которые тема красит одним цветом.
+        palette = {
+          moon = { text = "#b4b1c8" },
+        },
+
         highlight_groups = {
-          -- Числа и bool отдельно от строк (все были gold/rose).
           Number = { fg = "rose" },
           Float = { fg = "rose" },
           Boolean = { fg = "love" },
@@ -26,7 +28,6 @@ return {
           ["@string.regexp"] = { fg = "iris" },
           ["@string.special"] = { fg = "foam" },
 
-          -- Ключевые слова: ветвление / return / import / async.
           ["@keyword.return"] = { fg = "love" },
           ["@keyword.exception"] = { fg = "love" },
           ["@keyword.debug"] = { fg = "love" },
@@ -38,7 +39,6 @@ return {
           ["@keyword.modifier"] = { fg = "pine" },
           ["@keyword.function"] = { fg = "pine" },
 
-          -- Типы vs поля vs параметры.
           ["@type"] = { fg = "foam" },
           ["@type.builtin"] = { fg = "love" },
           ["@constructor"] = { fg = "gold" },
@@ -52,7 +52,6 @@ return {
           ["@attribute"] = { fg = "gold" },
           ["@constant.builtin"] = { fg = "love" },
 
-          -- Функции vs builtin vs метод.
           ["@function"] = { fg = "rose" },
           ["@function.call"] = { fg = "rose" },
           ["@function.builtin"] = { fg = "love" },
@@ -60,20 +59,17 @@ return {
           ["@function.method"] = { fg = "rose" },
           ["@function.method.call"] = { fg = "iris" },
 
-          -- Операторы видимые, скобки/запятые тише, ${} отдельно.
           Operator = { fg = "pine" },
           ["@operator"] = { fg = "pine" },
           ["@punctuation.delimiter"] = { fg = "muted" },
           ["@punctuation.bracket"] = { fg = "subtle" },
           ["@punctuation.special"] = { fg = "foam" },
 
-          -- JSX: теги как функции, html-теги и атрибуты отдельно.
           ["@tag"] = { fg = "rose" },
           ["@tag.builtin"] = { fg = "pine" },
           ["@tag.attribute"] = { fg = "iris" },
           ["@tag.delimiter"] = { fg = "muted" },
 
-          -- LSP: не красим @lsp.type.variable — иначе сотрёт treesitter.
           ["@lsp.type.class"] = { fg = "foam" },
           ["@lsp.type.interface"] = { fg = "foam" },
           ["@lsp.type.enum"] = { fg = "foam" },

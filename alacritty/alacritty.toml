@@ -33,8 +33,6 @@ hide_when_typing = true
 [window]
 decorations = "None"
 opacity = 0.95
-# Native macOS fullscreen (green button / a new Space) ignores opacity.
-# F11 uses SimpleFullscreen: same desktop, transparency still applies.
 
 [window.padding]
 x = 10
@@ -68,3 +66,13 @@ chars = "\u001B\r"
 [[keyboard.bindings]]
 key = "F11"
 action = "ToggleSimpleFullscreen"
+
+[colors.primary]
+foreground = "#b4b1c8"
+bright_foreground = "#b4b1c8"
+
+[colors.normal]
+white = "#b4b1c8"
+
+[colors.bright]
+white = "#b4b1c8"
