@@ -1,16 +1,10 @@
 #!/usr/bin/env bash
-#
-# cctask — one task, one worktree, one tmux window. Run --help for usage.
-#
-# The tmux session is named after the repository, the window after the task.
-# Existing branches, worktrees, sessions and windows are reused, never recreated
-# and never deleted.
-
 set -euo pipefail
 
 WORKTREE_ROOT="${CCTASK_WORKTREE_ROOT:-$HOME/.worktrees}"
 
 dry_run=0
+action=start
 task=""
 branch=""
 
@@ -25,6 +19,7 @@ cctask — one task, one worktree, one tmux window.
 
   cctask BAC-123                 create/reuse a worktree and tmux window for BAC-123
   cctask BAC-123 feat/BAC-123    same, with an explicit branch name
+  cctask done                    remove the current worktree (branch and tmux stay)
   cctask --dry-run BAC-123       print what would happen, change nothing
 
 Worktrees live in ~/.worktrees/<repo>/<task>, override with CCTASK_WORKTREE_ROOT.
@@ -45,8 +40,13 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) dry_run=1 ;;
     -h|--help) usage; exit 0 ;;
-    -*)        die "unknown option: $1" ;;
+    done)
+      [ "$action" = start ] && [ -z "$task" ] || die "unexpected argument: done"
+      action=done
+      ;;
+    -*) die "unknown option: $1" ;;
     *)
+      [ "$action" = start ] || die "cctask done takes no arguments"
       if   [ -z "$task" ];   then task="$1"
       elif [ -z "$branch" ]; then branch="$1"
       else die "unexpected argument: $1"
@@ -56,24 +56,40 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+command -v git >/dev/null || die "git not found"
+
+if [ "$action" = done ]; then
+  [ -z "$task" ] || die "cctask done takes no arguments"
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "not inside a git repository"
+  git_dir="$(git rev-parse --path-format=absolute --git-dir)"
+  common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"
+  [ "$git_dir" != "$common_dir" ] || die "this is the main checkout, not a worktree"
+  wt="$(git rev-parse --show-toplevel)"
+  main_root="$(cd "$(dirname "$common_dir")" && pwd)"
+  [ -d "$main_root/.git" ] || main_root="$(dirname "$common_dir")"
+  [ -z "$(git status --porcelain)" ] || die "worktree is dirty"
+  echo "==> removing worktree $wt"
+  if [ "$dry_run" -eq 1 ]; then
+    printf 'would run: git -C %q worktree remove %q\n' "$main_root" "$wt"
+    exit 0
+  fi
+  cd "$main_root"
+  git worktree remove "$wt"
+  exit 0
+fi
+
 [ -n "$task" ] || { usage >&2; exit 2; }
 
-# Task name becomes a directory, a branch and a tmux window name, so keep it tame.
 case "$task" in
   *[!A-Za-z0-9._-]*) die "task '$task' may only contain letters, digits, '.', '_' and '-'" ;;
   ""|.|..)           die "invalid task name: '$task'" ;;
 esac
 
-command -v git >/dev/null || die "git not found"
 command -v tmux >/dev/null || die "tmux not found"
-
-# --- repository ---------------------------------------------------------------
 
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" \
   || die "not inside a git repository"
 
-# From a worktree, git rev-parse --show-toplevel gives the worktree, not the main
-# checkout. Anchor everything on the main checkout so nested worktrees can't happen.
 common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"
 main_root="$(cd "$(dirname "$common_dir")" && pwd)"
 [ -d "$main_root/.git" ] || main_root="$repo_root"
@@ -83,19 +99,14 @@ branch="${branch:-$task}"
 worktree_dir="$WORKTREE_ROOT/$repo_name/$task"
 session="$repo_name"
 
-# --- default branch -----------------------------------------------------------
-
 default_branch=""
 if ref="$(git -C "$main_root" symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null)"; then
   default_branch="${ref#refs/remotes/origin/}"
-fi
-
-if [ -z "$default_branch" ]; then
+else
   for candidate in main master develop; do
-    if git -C "$main_root" show-ref --verify --quiet "refs/remotes/origin/$candidate"; then
-      default_branch="$candidate"
-      break
-    fi
+    git -C "$main_root" show-ref --verify --quiet "refs/remotes/origin/$candidate" || continue
+    default_branch="$candidate"
+    break
   done
 fi
 
@@ -106,16 +117,12 @@ echo "worktree: $worktree_dir"
 echo "base:     ${default_branch:-<no origin default branch found>}"
 echo
 
-# --- fetch --------------------------------------------------------------------
-
 if git -C "$main_root" remote get-url origin >/dev/null 2>&1; then
   echo "==> fetching origin"
   run git -C "$main_root" fetch --prune origin
 else
   echo "==> no 'origin' remote, skipping fetch"
 fi
-
-# --- worktree -----------------------------------------------------------------
 
 existing_worktree="$(
   git -C "$main_root" worktree list --porcelain \
@@ -129,8 +136,6 @@ if [ -n "$existing_worktree" ]; then
   echo "==> reusing worktree already checked out on '$branch': $existing_worktree"
   worktree_dir="$existing_worktree"
 elif [ -d "$worktree_dir" ]; then
-  # The directory is there but git doesn't have it on this branch. Say why rather
-  # than opening an editor on a stale checkout or the wrong branch.
   current="$(git -C "$worktree_dir" rev-parse --abbrev-ref HEAD 2>/dev/null)" \
     || die "$worktree_dir exists but is not a git worktree. Remove it, or run 'git worktree prune'."
   [ "$current" = "$branch" ] \
@@ -154,11 +159,7 @@ else
   fi
 fi
 
-# --- machine-local environment -------------------------------------------------
-
 if [ "$dry_run" -eq 0 ] && [ -d "$worktree_dir" ]; then
-  # JS tooling (ts_ls, eslint) looks in this checkout's node_modules.
-  # A worktree doesn't get it from git; reuse the main install via a symlink.
   if [ -d "$main_root/node_modules" ] && [ ! -e "$worktree_dir/node_modules" ]; then
     ln -s "$main_root/node_modules" "$worktree_dir/node_modules"
     echo "==> linked node_modules from $main_root"
@@ -181,8 +182,6 @@ if [ "$dry_run" -eq 0 ] && [ -d "$worktree_dir" ]; then
   fi
 fi
 
-# --- tmux ---------------------------------------------------------------------
-
 echo
 if [ "$dry_run" -eq 1 ]; then
   echo "would ensure tmux session '$session' and window '$task' running:"
@@ -192,27 +191,19 @@ if [ "$dry_run" -eq 1 ]; then
   exit 0
 fi
 
-# Everything below addresses panes and windows by tmux ID rather than by name.
-# A name is ambiguous in a target: ':' separates window from session and '.'
-# separates pane from window, so a task like 'BAC.123' would resolve to the wrong
-# thing. IDs ('@3', '%7') have no such problem.
-
 start_window() {
   local window="$1" editor claude_pane shell_pane
   editor="$(tmux list-panes -t "$window" -F '#{pane_id}' | head -1)"
-
-  # nvim 40% left, Claude above a toggleable shell on the 60% right.
   tmux set-option -p -t "$editor" @cctask_role editor
   tmux send-keys -t "$editor" 'nvim .' C-m
-  claude_pane="$(tmux split-window -h -l 60% -t "$editor" -c "$worktree_dir" -P -F '#{pane_id}')"
+  claude_pane="$(tmux split-window -h -l 50% -t "$editor" -c "$worktree_dir" -P -F '#{pane_id}')"
   tmux set-option -p -t "$claude_pane" @cctask_role claude
   tmux send-keys -t "$claude_pane" 'claude' C-m
-  shell_pane="$(tmux split-window -v -l 50% -t "$claude_pane" -c "$worktree_dir" -P -F '#{pane_id}')"
+  shell_pane="$(tmux split-window -v -l 25% -t "$claude_pane" -c "$worktree_dir" -P -F '#{pane_id}')"
   tmux set-option -p -t "$shell_pane" @cctask_role shell
   tmux select-pane -t "$editor"
 }
 
-# Exact name match; awk keeps the whole name even if it contains spaces.
 find_window() {
   tmux list-windows -t "=$session" -F '#{window_id} #{window_name}' 2>/dev/null \
     | awk -v want="$task" '{ id = $1; sub(/^[^ ]+ /, ""); if ($0 == want) { print id; exit } }'
@@ -235,8 +226,6 @@ fi
 
 tmux select-window -t "$window"
 if [ -n "${TMUX:-}" ]; then
-  # The worktree and the window already exist, so a failure to move the client
-  # (no client attached, for instance) shouldn't look like the task failed.
   tmux switch-client -t "=$session" 2>/dev/null \
     || echo "note: could not switch the client; the window is ready at $session:$task"
 else

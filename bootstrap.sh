@@ -49,7 +49,7 @@ link claude/agents/frontend-implementer.md "$claude_home/agents/frontend-impleme
 link claude/agents/code-reviewer.md        "$claude_home/agents/code-reviewer.md"
 link claude/agents/ui-validator.md         "$claude_home/agents/ui-validator.md"
 
-for script in "$repo/bin/cctask" "$repo/bin/cctask-toggle-shell"; do
+for script in "$repo/bin/cctask" "$repo/bin/cctask-toggle-pane" "$repo/bin/cctask-toggle-shell"; do
   if [ -f "$script" ] && [ ! -x "$script" ]; then
     chmod +x "$script"
     echo "chmod  bin/$(basename "$script")"
