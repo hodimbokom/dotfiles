@@ -26,6 +26,19 @@ curl -fsSL https://claude.ai/install.sh | bash   # Claude Code -> ~/.local/bin/c
 ~/.config/claude/mcp-setup.sh                    # registers the MCP servers
 ```
 
+tmux plugins are not vendored here, so clone them once:
+
+```sh
+git clone https://github.com/tmux-plugins/tmux-resurrect ~/.config/tmux/plugins/tmux-resurrect
+git clone https://github.com/tmux-plugins/tmux-continuum ~/.config/tmux/plugins/tmux-continuum
+```
+
+`tmux.conf` loads them only if they are present, so a machine without them still works.
+With them installed, `prefix + C-s` saves the session and `prefix + C-r` restores it;
+continuum then auto-saves every 15 minutes and restores on server start. Automatic
+launch at login is off — set `@continuum-boot 'on'` and uncomment `@continuum-boot-options`
+in [tmux/tmux.conf](tmux/tmux.conf) if you want Alacritty to open itself when you log in.
+
 `bootstrap.sh` links only the individual Claude config files, never the whole
 `~/.claude` directory, because Claude keeps generated state and credentials there.
 `~/.claude.json` holds OAuth tokens and is deliberately not tracked.
