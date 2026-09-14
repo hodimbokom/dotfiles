@@ -2,21 +2,13 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "defaultMode": "default",
+    "blockReadsOutsideWorkingDirectories": true,
     "allow": [
       "Read",
       "Glob",
       "Grep",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git show:*)",
-      "Bash(git branch:*)",
-      "Bash(git blame:*)",
-      "Bash(git worktree list:*)",
       "Bash(rg:*)",
       "Bash(fd:*)",
-      "Bash(ls:*)",
-      "Bash(cat:*)",
       "Bash(jq:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
@@ -55,9 +47,8 @@
       "Read(./**/*.pem)",
       "Read(./**/*.key)",
       "Read(./**/id_rsa*)",
-      "Read(//Users/vladimir.m/.ssh/**)",
-      "Read(//Users/vladimir.m/.npmrc)",
-      "Read(//Users/vladimir.m/.aws/**)",
+      "Read(~/.ssh/**)",
+      "Read(~/.npmrc)",
       "Bash(git push:*)",
       "Bash(git reset --hard:*)",
       "Bash(git clean:*)",
@@ -76,5 +67,9 @@
       "Bash(pnpm publish:*)"
     ]
   },
-  "includeCoAuthoredBy": false
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  }
 }

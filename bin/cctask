@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
 #
-# cctask — one task, one worktree, one tmux window.
+# cctask — one task, one worktree, one tmux window. Run --help for usage.
 #
-#   cctask BAC-123                 create/reuse a worktree and tmux window for BAC-123
-#   cctask BAC-123 feat/BAC-123    same, with an explicit branch name
-#   cctask --dry-run BAC-123       print what would happen, change nothing
-#
-# Worktrees live in ~/.worktrees/<repo>/<task>. The tmux session is named after the
-# repository, the window after the task. Existing branches, worktrees, sessions and
-# windows are reused, never recreated and never deleted.
+# The tmux session is named after the repository, the window after the task.
+# Existing branches, worktrees, sessions and windows are reused, never recreated
+# and never deleted.
 
 set -euo pipefail
 
@@ -24,7 +20,15 @@ die() {
 }
 
 usage() {
-  sed -n '3,12p' "$0" | sed 's/^# \{0,1\}//'
+  cat <<'EOF'
+cctask — one task, one worktree, one tmux window.
+
+  cctask BAC-123                 create/reuse a worktree and tmux window for BAC-123
+  cctask BAC-123 feat/BAC-123    same, with an explicit branch name
+  cctask --dry-run BAC-123       print what would happen, change nothing
+
+Worktrees live in ~/.worktrees/<repo>/<task>, override with CCTASK_WORKTREE_ROOT.
+EOF
 }
 
 run() {
@@ -125,7 +129,13 @@ if [ -n "$existing_worktree" ]; then
   echo "==> reusing worktree already checked out on '$branch': $existing_worktree"
   worktree_dir="$existing_worktree"
 elif [ -d "$worktree_dir" ]; then
-  echo "==> reusing existing directory $worktree_dir"
+  # The directory is there but git doesn't have it on this branch. Say why rather
+  # than opening an editor on a stale checkout or the wrong branch.
+  current="$(git -C "$worktree_dir" rev-parse --abbrev-ref HEAD 2>/dev/null)" \
+    || die "$worktree_dir exists but is not a git worktree. Remove it, or run 'git worktree prune'."
+  [ "$current" = "$branch" ] \
+    || die "$worktree_dir is on branch '$current', not '$branch'. Pass the branch you want, or remove that worktree."
+  echo "==> reusing existing worktree $worktree_dir"
 else
   echo "==> creating worktree"
   run mkdir -p "$(dirname "$worktree_dir")"
@@ -176,30 +186,50 @@ if [ "$dry_run" -eq 1 ]; then
   exit 0
 fi
 
+# Everything below addresses panes and windows by tmux ID rather than by name.
+# A name is ambiguous in a target: ':' separates window from session and '.'
+# separates pane from window, so a task like 'BAC.123' would resolve to the wrong
+# thing. IDs ('@3', '%7') have no such problem.
+
 start_window() {
+  local window="$1" editor claude_pane
+  editor="$(tmux list-panes -t "$window" -F '#{pane_id}' | head -1)"
+
   # Large editor pane on the left, Claude above a utility shell on the right.
-  tmux send-keys -t "$session:$task" 'nvim .' C-m
-  tmux split-window -h -p 35 -t "$session:$task" -c "$worktree_dir"
-  tmux send-keys -t "$session:$task" 'claude' C-m
-  tmux split-window -v -p 50 -t "$session:$task" -c "$worktree_dir"
-  tmux select-pane -t "$session:$task".0
+  tmux send-keys -t "$editor" 'nvim .' C-m
+  claude_pane="$(tmux split-window -h -l 35% -t "$editor" -c "$worktree_dir" -P -F '#{pane_id}')"
+  tmux send-keys -t "$claude_pane" 'claude' C-m
+  tmux split-window -v -l 50% -t "$claude_pane" -c "$worktree_dir"
+  tmux select-pane -t "$editor"
+}
+
+# Exact name match; awk keeps the whole name even if it contains spaces.
+find_window() {
+  tmux list-windows -t "=$session" -F '#{window_id} #{window_name}' 2>/dev/null \
+    | awk -v want="$task" '{ id = $1; sub(/^[^ ]+ /, ""); if ($0 == want) { print id; exit } }'
 }
 
 if ! tmux has-session -t="$session" 2>/dev/null; then
   echo "==> creating tmux session '$session' with window '$task'"
-  tmux new-session -d -s "$session" -n "$task" -c "$worktree_dir"
-  start_window
-elif tmux list-windows -t "$session" -F '#{window_name}' | grep -qx "$task"; then
-  echo "==> reusing existing tmux window '$session:$task'"
+  window="$(tmux new-session -d -s "$session" -n "$task" -c "$worktree_dir" -P -F '#{window_id}')"
+  start_window "$window"
 else
-  echo "==> adding tmux window '$task' to session '$session'"
-  tmux new-window -t "$session" -n "$task" -c "$worktree_dir"
-  start_window
+  window="$(find_window)"
+  if [ -n "$window" ]; then
+    echo "==> reusing existing tmux window '$task' ($window)"
+  else
+    echo "==> adding tmux window '$task' to session '$session'"
+    window="$(tmux new-window -t "=$session" -n "$task" -c "$worktree_dir" -P -F '#{window_id}')"
+    start_window "$window"
+  fi
 fi
 
+tmux select-window -t "$window"
 if [ -n "${TMUX:-}" ]; then
-  tmux switch-client -t "$session:$task"
+  # The worktree and the window already exist, so a failure to move the client
+  # (no client attached, for instance) shouldn't look like the task failed.
+  tmux switch-client -t "=$session" 2>/dev/null \
+    || echo "note: could not switch the client; the window is ready at $session:$task"
 else
-  tmux select-window -t "$session:$task"
-  tmux attach-session -t "$session"
+  tmux attach-session -t "=$session"
 fi

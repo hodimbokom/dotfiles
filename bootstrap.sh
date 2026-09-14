@@ -12,7 +12,9 @@ set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 claude_home="$HOME/.claude"
-backup_dir="$HOME/.claude/backups/dotfiles-$(date +%Y%m%d-%H%M%S)"
+# Not under ~/.claude/backups: that directory belongs to Claude Code, which rotates
+# its own .claude.json backups there.
+backup_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backup-$(date +%Y%m%d-%H%M%S)"
 
 link() {
   local src="$repo/$1" dest="$2"
