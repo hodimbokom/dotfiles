@@ -93,6 +93,23 @@ return {
       }
 
       vim.cmd.colorscheme "rose-pine-moon"
+
+      for _, group in ipairs({
+        "DiagnosticUnderlineError",
+        "DiagnosticUnderlineWarn",
+        "DiagnosticUnderlineInfo",
+        "DiagnosticUnderlineHint",
+        "DiagnosticUnderlineOk",
+        "SpellBad",
+        "SpellCap",
+        "SpellLocal",
+        "SpellRare",
+      }) do
+        local hl = vim.api.nvim_get_hl(0, { name = group, link = false })
+        hl.undercurl = false
+        hl.underline = true
+        vim.api.nvim_set_hl(0, group, hl)
+      end
     end,
   },
 }

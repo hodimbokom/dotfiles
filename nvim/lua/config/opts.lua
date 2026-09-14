@@ -23,3 +23,4 @@ vim.opt.incsearch = true
 
 vim.opt.signcolumn = "yes:1"
 vim.opt.cursorline = true
+vim.opt.termguicolors = true
