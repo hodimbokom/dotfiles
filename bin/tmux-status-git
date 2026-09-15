@@ -36,8 +36,8 @@ if git rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
   if [ -n "$counts" ]; then
     behind="${counts%%	*}"
     ahead="${counts##*	}"
-    [ "$ahead" -gt 0 ] 2>/dev/null && sync="$sync #[fg=#9ccfd8]↑$ahead"
-    [ "$behind" -gt 0 ] 2>/dev/null && sync="$sync #[fg=#f6c177]↓$behind"
+    [ "$ahead" -gt 0 ] 2>/dev/null && sync="$sync #[fg=#9ccfd8]↑ $ahead"
+    [ "$behind" -gt 0 ] 2>/dev/null && sync="$sync #[fg=#f6c177]↓ $behind"
   fi
 fi
 
@@ -47,7 +47,7 @@ base="${ref#refs/remotes/origin/}"
 [ -n "$base" ] || base=main
 if [ "$b" != "$base" ] && git rev-parse --verify "origin/$base" >/dev/null 2>&1; then
   n="$(git rev-list --count "HEAD..origin/$base" 2>/dev/null)" || n=0
-  [ "$n" -gt 0 ] 2>/dev/null && main=" #[fg=#c4a7e7]main↓$n"
+  [ "$n" -gt 0 ] 2>/dev/null && main=" #[fg=#c4a7e7]main ↓ $n"
 fi
 
 printf '#[fg=#6e6a86]%s #[fg=#b4b1c8]%s %s%s%s%s' "$kind" "$b" "$state" "$op" "$sync" "$main"

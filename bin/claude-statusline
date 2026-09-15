@@ -11,31 +11,14 @@ eval "$(printf '%s' "$input" | jq -r '
   "d7=\(.rate_limits.seven_day.used_percentage | n)"
 ')"
 
-color() {
-  if [ -z "$1" ]; then
-    printf '%s' '#6e6a86'
-  elif [ "$1" -ge 80 ]; then
-    printf '%s' '#eb6f92'
-  elif [ "$1" -ge 50 ]; then
-    printf '%s' '#f6c177'
-  else
-    printf '%s' '#b4b1c8'
-  fi
-}
+{
+  printf 'ctx=%s\n' "$ctx"
+  printf 'h5=%s\n' "$h5"
+  printf 'd7=%s\n' "$d7"
+} > "$cache" 2>/dev/null || true
 
-tmux_out=
 plain=
-if [ -n "$ctx" ]; then
-  tmux_out="$tmux_out #[fg=#6e6a86]ctx #[fg=$(color "$ctx")]${ctx}%"
-  plain="$plain ctx ${ctx}%"
-fi
-if [ -n "$h5" ]; then
-  tmux_out="$tmux_out #[fg=#6e6a86]5h #[fg=$(color "$h5")]${h5}%"
-  plain="$plain 5h ${h5}%"
-fi
-if [ -n "$d7" ]; then
-  tmux_out="$tmux_out #[fg=#6e6a86]7d #[fg=$(color "$d7")]${d7}%"
-  plain="$plain 7d ${d7}%"
-fi
-printf '%s' "${tmux_out# }" > "$cache" 2>/dev/null || true
+[ -n "$ctx" ] && plain="$plain 󰧑 ${ctx}%"
+[ -n "$h5" ] && plain="$plain 󰔛 ${h5}%"
+[ -n "$d7" ] && plain="$plain 󰨳 ${d7}%"
 printf '%s\n' "${plain# }"
