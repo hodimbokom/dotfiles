@@ -24,12 +24,12 @@ find_pane() {
   [ -n "$p" ] && { echo "$p"; return; }
   case "$role" in
     shell)
-      tmux list-panes -t "$win" -F '#{pane_id} #{pane_at_top} #{pane_at_bottom} #{pane_at_right}' \
+      tmux list-panes -t "$win" -F '#{pane_id} #{pane_at_top} #{pane_at_bottom} #{pane_at_left}' \
         | awk '$2 == 0 && $3 == 1 && $4 == 1 { print $1; exit }'
       ;;
     editor)
-      tmux list-panes -t "$win" -F '#{pane_id} #{pane_at_left} #{pane_at_right} #{pane_at_top} #{pane_at_bottom}' \
-        | awk '$2 == 1 && $3 == 0 && $4 == 1 && $5 == 1 { print $1; exit }'
+      tmux list-panes -t "$win" -F '#{pane_id} #{pane_at_left} #{pane_at_right} #{pane_at_top}' \
+        | awk '$2 == 1 && $3 == 0 && $4 == 1 { print $1; exit }'
       ;;
   esac
 }
@@ -57,10 +57,17 @@ if [ -n "$hidden" ]; then
   [ -n "$target" ] || { tmux display-message "no pane to restore $role into"; exit 1; }
   case "$role" in
     shell)
+      editor="$(pane_by_role editor)"
+      [ -n "$editor" ] && target="$editor"
       tmux join-pane -v -l 25% -s "$hidden" -t "$target"
       ;;
     editor)
-      tmux join-pane -h -b -f -l 50% -s "$hidden" -t "$target"
+      shell="$(pane_by_role shell)"
+      if [ -n "$shell" ]; then
+        tmux join-pane -v -b -l 75% -s "$hidden" -t "$shell"
+      else
+        tmux join-pane -h -b -f -l 50% -s "$hidden" -t "$target"
+      fi
       ;;
   esac
   tmux set-option -wu -t "$win" "$hidden_opt"

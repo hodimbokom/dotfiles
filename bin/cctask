@@ -199,7 +199,7 @@ start_window() {
   claude_pane="$(tmux split-window -h -l 50% -t "$editor" -c "$worktree_dir" -P -F '#{pane_id}')"
   tmux set-option -p -t "$claude_pane" @cctask_role claude
   tmux send-keys -t "$claude_pane" 'claude' C-m
-  shell_pane="$(tmux split-window -v -l 25% -t "$claude_pane" -c "$worktree_dir" -P -F '#{pane_id}')"
+  shell_pane="$(tmux split-window -v -l 25% -t "$editor" -c "$worktree_dir" -P -F '#{pane_id}')"
   tmux set-option -p -t "$shell_pane" @cctask_role shell
   tmux select-pane -t "$editor"
 }
