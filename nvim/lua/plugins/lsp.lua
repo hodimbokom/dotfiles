@@ -122,6 +122,7 @@ return {
       })
 
       vim.diagnostic.config({
+        underline = false,
         float = {
           focusable = false,
           style = 'minimal',

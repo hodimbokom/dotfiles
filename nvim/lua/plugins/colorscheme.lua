@@ -17,6 +17,14 @@ return {
           moon = { text = "#b4b1c8" },
         },
 
+        before_highlight = function(_, highlight)
+          highlight.undercurl = false
+          highlight.underdouble = false
+          highlight.underdotted = false
+          highlight.underdashed = false
+          highlight.sp = nil
+        end,
+
         highlight_groups = {
           Number = { fg = "rose" },
           Float = { fg = "rose" },
@@ -85,27 +93,20 @@ return {
           ["@lsp.typemod.parameter.unused"] = { fg = "muted" },
           ["@lsp.typemod.variable.defaultLibrary"] = { fg = "love" },
           ["@lsp.typemod.function.defaultLibrary"] = { fg = "love" },
+
+          DiagnosticUnderlineError = { underline = true, inherit = false },
+          DiagnosticUnderlineWarn = { underline = true, inherit = false },
+          DiagnosticUnderlineInfo = { underline = true, inherit = false },
+          DiagnosticUnderlineHint = { underline = true, inherit = false },
+          DiagnosticUnderlineOk = { underline = true, inherit = false },
+          SpellBad = { underline = true, inherit = false },
+          SpellCap = { underline = true, inherit = false },
+          SpellLocal = { underline = true, inherit = false },
+          SpellRare = { underline = true, inherit = false },
         },
       }
 
       vim.cmd.colorscheme "rose-pine-moon"
-
-      for _, group in ipairs({
-        "DiagnosticUnderlineError",
-        "DiagnosticUnderlineWarn",
-        "DiagnosticUnderlineInfo",
-        "DiagnosticUnderlineHint",
-        "DiagnosticUnderlineOk",
-        "SpellBad",
-        "SpellCap",
-        "SpellLocal",
-        "SpellRare",
-      }) do
-        local hl = vim.api.nvim_get_hl(0, { name = group, link = false })
-        hl.undercurl = false
-        hl.underline = true
-        vim.api.nvim_set_hl(0, group, hl)
-      end
     end,
   },
 }
