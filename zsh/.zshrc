@@ -11,9 +11,6 @@ eval "$(pyenv init -)"
 
 setopt auto_cd
 
-bindkey '^I'   autosuggest-accept
-bindkey '^[[Z' complete-word
-
 alias v='nvim'
 alias g='git'
 
@@ -61,6 +58,9 @@ export FZF_CTRL_T_OPTS='--preview "bat --style=plain --color=always {} 2>/dev/nu
 export FZF_ALT_C_OPTS='--preview "eza -alg {}"'
 source $(brew --prefix)/opt/fzf/shell/completion.zsh
 source $(brew --prefix)/opt/fzf/shell/key-bindings.zsh
+
+bindkey '^I'   autosuggest-accept
+bindkey '^[[Z' complete-word
 
 eval "$(starship init zsh)"
 
