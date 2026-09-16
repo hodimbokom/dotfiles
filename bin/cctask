@@ -17,6 +17,7 @@ usage() {
   cat <<'EOF'
 cctask — one task, one worktree, one tmux window.
 
+  cctask main                    general window on the main checkout (no task branch)
   cctask BAC-123                 create/reuse a worktree and tmux window for BAC-123
   cctask BAC-123 feat/BAC-123    same, with an explicit branch name
   cctask done                    remove the current worktree (branch and tmux stay)
@@ -36,6 +37,37 @@ run() {
   fi
 }
 
+ensure_node_modules() {
+  local dir="$1" need=0
+  [ -f "$dir/package.json" ] || return 0
+
+  if [ -L "$dir/node_modules" ]; then
+    echo "==> replacing shared node_modules with a local install"
+    run rm "$dir/node_modules"
+    need=1
+  elif [ ! -e "$dir/node_modules" ]; then
+    need=1
+  fi
+
+  [ "$need" -eq 1 ] || return 0
+
+  if [ -f "$dir/pnpm-lock.yaml" ]; then
+    echo "==> pnpm install"
+    run pnpm --dir "$dir" install
+  elif [ -f "$dir/yarn.lock" ]; then
+    echo "==> yarn install"
+    run yarn --cwd "$dir" install
+  elif [ -f "$dir/bun.lockb" ] || [ -f "$dir/bun.lock" ]; then
+    echo "==> bun install"
+    run bun install --cwd "$dir"
+  elif [ -f "$dir/package-lock.json" ]; then
+    echo "==> npm install"
+    run npm install --prefix "$dir"
+  else
+    echo "note: package.json without a lockfile; skip install"
+  fi
+}
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) dry_run=1 ;;
@@ -44,9 +76,13 @@ while [ $# -gt 0 ]; do
       [ "$action" = start ] && [ -z "$task" ] || die "unexpected argument: done"
       action=done
       ;;
+    main|work)
+      [ "$action" = start ] && [ -z "$task" ] || die "unexpected argument: $1"
+      action=main
+      ;;
     -*) die "unknown option: $1" ;;
     *)
-      [ "$action" = start ] || die "cctask done takes no arguments"
+      [ "$action" = start ] || die "cctask $action takes no arguments"
       if   [ -z "$task" ];   then task="$1"
       elif [ -z "$branch" ]; then branch="$1"
       else die "unexpected argument: $1"
@@ -57,6 +93,58 @@ while [ $# -gt 0 ]; do
 done
 
 command -v git >/dev/null || die "git not found"
+
+start_window() {
+  local window="$1" dir="$2" editor claude_pane shell_pane
+  editor="$(tmux list-panes -t "$window" -F '#{pane_id}' | head -1)"
+  tmux set-option -p -t "$editor" @cctask_role editor
+  tmux send-keys -t "$editor" 'nvim .' C-m
+  claude_pane="$(tmux split-window -h -l 50% -t "$editor" -c "$dir" -P -F '#{pane_id}')"
+  tmux set-option -p -t "$claude_pane" @cctask_role claude
+  tmux send-keys -t "$claude_pane" 'claude' C-m
+  shell_pane="$(tmux split-window -v -l 30% -t "$editor" -c "$dir" -P -F '#{pane_id}')"
+  tmux set-option -p -t "$shell_pane" @cctask_role shell
+  tmux select-pane -t "$editor"
+}
+
+find_window() {
+  tmux list-windows -t "=$1" -F '#{window_id} #{window_name}' 2>/dev/null \
+    | awk -v want="$2" '{ id = $1; sub(/^[^ ]+ /, ""); if ($0 == want) { print id; exit } }'
+}
+
+attach_window() {
+  local session="$1" name="$2" dir="$3" window
+  if ! tmux has-session -t="$session" 2>/dev/null; then
+    echo "==> creating tmux session '$session' with window '$name'"
+    window="$(tmux new-session -d -s "$session" -n "$name" -c "$dir" -P -F '#{window_id}')"
+    start_window "$window" "$dir"
+  else
+    window="$(find_window "$session" "$name")"
+    if [ -n "$window" ]; then
+      echo "==> reusing existing tmux window '$name' ($window)"
+    else
+      echo "==> adding tmux window '$name' to session '$session'"
+      window="$(tmux new-window -t "=$session" -n "$name" -c "$dir" -P -F '#{window_id}')"
+      start_window "$window" "$dir"
+    fi
+  fi
+  tmux select-window -t "$window"
+  if [ -n "${TMUX:-}" ]; then
+    tmux switch-client -t "=$session" 2>/dev/null \
+      || echo "note: could not switch the client; the window is ready at $session:$name"
+  else
+    tmux attach-session -t "=$session"
+  fi
+}
+
+repo_roots() {
+  repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" \
+    || die "not inside a git repository"
+  common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"
+  main_root="$(cd "$(dirname "$common_dir")" && pwd)"
+  [ -d "$main_root/.git" ] || main_root="$repo_root"
+  repo_name="$(basename "$main_root")"
+}
 
 if [ "$action" = done ]; then
   [ -z "$task" ] || die "cctask done takes no arguments"
@@ -78,23 +166,31 @@ if [ "$action" = done ]; then
   exit 0
 fi
 
+if [ "$action" = main ]; then
+  command -v tmux >/dev/null || die "tmux not found"
+  repo_roots
+  session="$repo_name"
+  echo "repo: $repo_name ($main_root)"
+  echo "window: main"
+  echo
+  if [ "$dry_run" -eq 1 ]; then
+    echo "would ensure tmux session '$session' and window 'main' in $main_root"
+    exit 0
+  fi
+  attach_window "$session" "main" "$main_root"
+  exit 0
+fi
+
 [ -n "$task" ] || { usage >&2; exit 2; }
 
 case "$task" in
+  main|work|done) die "'$task' is reserved; use 'cctask main' for the general window" ;;
   *[!A-Za-z0-9._-]*) die "task '$task' may only contain letters, digits, '.', '_' and '-'" ;;
   ""|.|..)           die "invalid task name: '$task'" ;;
 esac
 
 command -v tmux >/dev/null || die "tmux not found"
-
-repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" \
-  || die "not inside a git repository"
-
-common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"
-main_root="$(cd "$(dirname "$common_dir")" && pwd)"
-[ -d "$main_root/.git" ] || main_root="$repo_root"
-
-repo_name="$(basename "$main_root")"
+repo_roots
 branch="${branch:-$task}"
 worktree_dir="$WORKTREE_ROOT/$repo_name/$task"
 session="$repo_name"
@@ -152,19 +248,16 @@ else
     run git -C "$main_root" worktree add --track -b "$branch" "$worktree_dir" "origin/$branch"
   elif [ -n "$default_branch" ]; then
     echo "    creating branch '$branch' from origin/$default_branch"
-    run git -C "$main_root" worktree add -b "$branch" "$worktree_dir" "origin/$default_branch"
+    run git -C "$main_root" worktree add --no-track -b "$branch" "$worktree_dir" "origin/$default_branch"
   else
     echo "    creating branch '$branch' from HEAD"
-    run git -C "$main_root" worktree add -b "$branch" "$worktree_dir"
+    run git -C "$main_root" worktree add --no-track -b "$branch" "$worktree_dir"
   fi
 fi
 
-if [ "$dry_run" -eq 0 ] && [ -d "$worktree_dir" ]; then
-  if [ -d "$main_root/node_modules" ] && [ ! -e "$worktree_dir/node_modules" ]; then
-    ln -s "$main_root/node_modules" "$worktree_dir/node_modules"
-    echo "==> linked node_modules from $main_root"
-  fi
-  if [ -f "$worktree_dir/.worktreeinclude" ]; then
+if [ -d "$worktree_dir" ]; then
+  ensure_node_modules "$worktree_dir"
+  if [ "$dry_run" -eq 0 ] && [ -f "$worktree_dir/.worktreeinclude" ]; then
     echo
     echo "==> this repo has a .worktreeinclude; copying the files it lists"
     while IFS= read -r entry || [ -n "$entry" ]; do
@@ -175,7 +268,7 @@ if [ "$dry_run" -eq 0 ] && [ -d "$worktree_dir" ]; then
         echo "    copied $entry"
       fi
     done < "$worktree_dir/.worktreeinclude"
-  elif compgen -G "$main_root/.env*" >/dev/null 2>&1 && ! compgen -G "$worktree_dir/.env*" >/dev/null 2>&1; then
+  elif [ "$dry_run" -eq 0 ] && compgen -G "$main_root/.env*" >/dev/null 2>&1 && ! compgen -G "$worktree_dir/.env*" >/dev/null 2>&1; then
     echo
     echo "note: the main checkout has .env files that this worktree does not."
     echo "      Nothing was copied. Set up machine-local env yourself if the app needs it."
@@ -191,43 +284,4 @@ if [ "$dry_run" -eq 1 ]; then
   exit 0
 fi
 
-start_window() {
-  local window="$1" editor claude_pane shell_pane
-  editor="$(tmux list-panes -t "$window" -F '#{pane_id}' | head -1)"
-  tmux set-option -p -t "$editor" @cctask_role editor
-  tmux send-keys -t "$editor" 'nvim .' C-m
-  claude_pane="$(tmux split-window -h -l 50% -t "$editor" -c "$worktree_dir" -P -F '#{pane_id}')"
-  tmux set-option -p -t "$claude_pane" @cctask_role claude
-  tmux send-keys -t "$claude_pane" 'claude' C-m
-  shell_pane="$(tmux split-window -v -l 25% -t "$editor" -c "$worktree_dir" -P -F '#{pane_id}')"
-  tmux set-option -p -t "$shell_pane" @cctask_role shell
-  tmux select-pane -t "$editor"
-}
-
-find_window() {
-  tmux list-windows -t "=$session" -F '#{window_id} #{window_name}' 2>/dev/null \
-    | awk -v want="$task" '{ id = $1; sub(/^[^ ]+ /, ""); if ($0 == want) { print id; exit } }'
-}
-
-if ! tmux has-session -t="$session" 2>/dev/null; then
-  echo "==> creating tmux session '$session' with window '$task'"
-  window="$(tmux new-session -d -s "$session" -n "$task" -c "$worktree_dir" -P -F '#{window_id}')"
-  start_window "$window"
-else
-  window="$(find_window)"
-  if [ -n "$window" ]; then
-    echo "==> reusing existing tmux window '$task' ($window)"
-  else
-    echo "==> adding tmux window '$task' to session '$session'"
-    window="$(tmux new-window -t "=$session" -n "$task" -c "$worktree_dir" -P -F '#{window_id}')"
-    start_window "$window"
-  fi
-fi
-
-tmux select-window -t "$window"
-if [ -n "${TMUX:-}" ]; then
-  tmux switch-client -t "=$session" 2>/dev/null \
-    || echo "note: could not switch the client; the window is ready at $session:$task"
-else
-  tmux attach-session -t "=$session"
-fi
+attach_window "$session" "$task" "$worktree_dir"
