@@ -5,6 +5,7 @@
     "pr": "",
     "sessionUrl": false
   },
+  "includeGitInstructions": false,
   "permissions": {
     "allow": [
       "Read",
