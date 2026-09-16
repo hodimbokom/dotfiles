@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+set_if() {
+  [ "$2" = "$(tmux show-options -gv "$1" 2>/dev/null)" ] && return
+  tmux set-option -g "$1" "$2"
+}
+
+active() {
+  line="$(tmux list-clients -F '#{client_activity}|#{pane_current_path}|#{client_pid}|#{pid}|#{window_id}' 2>/dev/null | sort -n | tail -1)"
+  [ -n "$line" ] || return 1
+  IFS='|' read -r _ path client pid wid <<<"$line"
+}
+
+git_chip() {
+  if ! cd "$1" 2>/dev/null || ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    printf '#[fg=#6e6a86]none '
+    return
+  fi
+  local gd gc kind b st head files state op= sync= main= n base ahead behind
+  gd="$(git rev-parse --git-dir)"
+  gc="$(git rev-parse --git-common-dir)"
+  [ "$gd" = "$gc" ] && kind=repo || kind=worktree
+  st="$(git status --porcelain=v1 -b 2>/dev/null)"
+  head="${st%%$'\n'*}"
+  files="${st#"$head"}"
+  b="${head#\#\# }"
+  b="${b%%...*}"
+  case "$head" in
+    *'[ahead '*) ahead="${head##*ahead }"; ahead="${ahead%%,*}"; ahead="${ahead%%]*}" ;;
+  esac
+  case "$head" in
+    *'behind '*) behind="${head##*behind }"; behind="${behind%%]*}" ;;
+  esac
+  [ "${ahead:-0}" -gt 0 ] 2>/dev/null && sync="$sync #[fg=#9ccfd8]↑ $ahead"
+  [ "${behind:-0}" -gt 0 ] 2>/dev/null && sync="$sync #[fg=#f6c177]↓ $behind"
+  if printf '%s' "$files" | grep -qE '^(U|.U)'; then
+    state='#[fg=#eb6f92]unstaged'
+    op=' #[fg=#eb6f92]conflict'
+  elif printf '%s' "$files" | grep -q '^.[^ ]'; then
+    state='#[fg=#eb6f92]unstaged'
+  elif [ -n "$files" ]; then
+    state='#[fg=#f6c177]staged'
+  else
+    state='#[fg=#6e6a86]clean'
+  fi
+  if [ -z "$op" ]; then
+    if [ -d "$gd/rebase-merge" ] || [ -d "$gd/rebase-apply" ]; then
+      op=' #[fg=#eb6f92]rebase'
+    elif [ -f "$gd/MERGE_HEAD" ]; then
+      op=' #[fg=#eb6f92]merge'
+    elif [ -f "$gd/CHERRY_PICK_HEAD" ]; then
+      op=' #[fg=#eb6f92]cherry'
+    fi
+  fi
+  base="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)"
+  base="${base#origin/}"
+  [ -n "$base" ] || base=main
+  if [ "$b" != "$base" ]; then
+    n="$(git rev-list --count "HEAD..origin/$base" 2>/dev/null)" || n=0
+    [ "$n" -gt 0 ] 2>/dev/null && main=" #[fg=#c4a7e7]main ↓ $n"
+  fi
+  printf '#[fg=#6e6a86]%s #[fg=#b4b1c8]%s %s%s%s%s ' "$kind" "$b" "$state" "$op" "$sync" "$main"
+}
+
+warn() {
+  if [ "$1" -ge 80 ] 2>/dev/null; then
+    printf '#[fg=#eb6f92,bg=#f6c177]'
+  elif [ "$1" -ge 50 ] 2>/dev/null; then
+    printf '#[fg=#b4637a,bg=#f6c177]'
+  else
+    printf '#[fg=#232136,bg=#f6c177]'
+  fi
+}
+
+sys_chip() {
+  local used mb win host usage_chip ctx= h5= d7= dir top key panes
+  used="$(memory_pressure 2>/dev/null | awk -F': ' '/free percentage/ { gsub(/[^0-9]/, "", $2); print 100 - $2 }')"
+  panes="$(tmux list-panes -t "$4" -F '#{pane_pid}' 2>/dev/null | tr '\n' ' ')"
+  read mb win <<EOF
+$(ps -axo pid=,ppid=,rss=,comm= | awk -v client="$2" -v server="$3" -v panes="$panes" '
+  { pid=$1+0; ppid=$2+0; rss=$3+0; $1=$2=$3=""; sub(/^ +/,""); parent[pid]=ppid; mem[pid]=rss; name[pid]=tolower($0); kids[ppid]=kids[ppid]" "pid }
+  function take(p, d, n, ch, i) {
+    p+=0; if (p<=1 || p in d) return
+    if (name[p] ~ /\/applications\// && name[p] !~ /alacritty/) return
+    d[p]=1; n=split(kids[p], ch, " "); for (i=1;i<=n;i++) if (ch[i]+0) take(ch[i]+0, d)
+  }
+  END {
+    if (client+0>10) {
+      x=client+0
+      for (k=0; k<20 && x>1; k++) {
+        if (name[x] ~ /alacritty/) { take(x, stack); break }
+        x=parent[x]+0
+      }
+    }
+    if (server+0>10) take(server+0, stack)
+    n=split(panes, ps, " "); for (i=1;i<=n;i++) if (ps[i]+0) take(ps[i]+0, win)
+    for (p in stack) s+=mem[p]; for (p in win) w+=mem[p]
+    printf "%d %d", int((s+512)/1024), int((w+512)/1024)
+  }')
+EOF
+  host="#[fg=#232136,bg=#3e8fb0] "
+  [ -n "$mb" ] && host="${host}all: ${mb}MB "
+  [ -n "$win" ] && [ "$win" != 0 ] && host="${host}curr: ${win}MB "
+  [ -n "$used" ] && host="${host}mem:$(printf '%3s' "$used")% "
+  dir="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-claude-usage"
+  if [ -d "$dir" ]; then
+    [ -f "$dir/limits" ] && eval "$(grep -E '^(h5|d7)=' "$dir/limits" 2>/dev/null)"
+    if [ -n "$1" ]; then
+      top="$(cd "$1" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null || echo "$1")"
+      key="$(printf '%s' "$top" | md5 -q)"
+      [ -f "$dir/c-$key" ] && eval "$(grep -E '^ctx=' "$dir/c-$key" 2>/dev/null)"
+    fi
+  fi
+  if [ -n "$ctx$h5$d7" ]; then
+    [ -n "$ctx" ] || ctx='--'
+    [ -n "$h5" ] || h5='--'
+    [ -n "$d7" ] || d7='--'
+    usage_chip="$(warn "$ctx") ctx:$(printf '%3s' "$ctx")% $(warn "$h5") 5h:$(printf '%3s' "$h5")% $(warn "$d7") w:$(printf '%3s' "$d7")% "
+  fi
+  printf '%s%s' "$usage_chip" "$host"
+}
+
+clock_chip() {
+  local ge tw h foam twc
+  ge="$(TZ=Asia/Tbilisi date +%H:%M)"
+  tw="$(TZ=Asia/Taipei date +%H:%M)"
+  h="$(TZ=Asia/Taipei date +%H)"
+  foam='#[fg=#232136,bg=#9ccfd8]'
+  case "$h" in
+    09|10|11|12|13|14|15|16|17) twc='#[fg=#286983,bg=#9ccfd8,bold]' ;;
+    *) twc="$foam" ;;
+  esac
+  printf '%s GE %s · %sTW %s ' "$foam" "$ge" "$twc" "$tw"
+}
+
+claude() {
+  local pane text new old sess wid
+  tmux list-windows -a -F '#{session_name} #{window_id}' 2>/dev/null | while read -r sess wid; do
+    [ "$sess" = "_cctask_hidden" ] && continue
+    [ -n "$wid" ] || continue
+    pane="$(tmux list-panes -t "$wid" -F '#{pane_id} #{@cctask_role} #{pane_current_command}' 2>/dev/null \
+      | awk '$2 == "claude" || $3 == "claude" { print $1; exit }')"
+    new=
+    if [ -n "$pane" ]; then
+      text="$(tmux capture-pane -t "$pane" -p -J -S -20 2>/dev/null)" || text=
+      if printf '%s' "$text" | grep -qiE 'do you want to proceed|esc to cancel · tab to amend'; then
+        new=' #[fg=#eb6f92]?'
+      elif printf '%s' "$text" | grep -qiE 'waiting for [0-9]+ background agent|to interrupt|thinking|ctrl\+b to run in background'; then
+        new=' #[fg=#f6c177]●'
+      elif printf '%s' "$text" | grep -q '· done'; then
+        new=' #[fg=#9ccfd8]✓'
+      else
+        new=' #[fg=#6e6a86]●'
+      fi
+    fi
+    old="$(tmux show-options -wv -t "$wid" @cctask_claude 2>/dev/null || true)"
+    [ "$new" = "$old" ] && continue
+    tmux set-option -w -t "$wid" @cctask_claude "$new"
+  done
+}
+
+git_up() { active && set_if @cctask_git "$(git_chip "$path")"; }
+sys_up() { active && set_if @cctask_sys "$(sys_chip "$path" "$client" "$pid" "$wid")"; }
+clock_up() { set_if @cctask_clock "$(clock_chip)"; }
+
+pane() {
+  active || return
+  set_if @cctask_git "$(git_chip "$path")"
+  set_if @cctask_sys "$(sys_chip "$path" "$client" "$pid" "$wid")"
+}
+
+case "${1:-all}" in
+  git) git_up ;;
+  sys) sys_up ;;
+  light) clock_up; claude ;;
+  pane) pane ;;
+  *) pane; clock_up; claude ;;
+esac

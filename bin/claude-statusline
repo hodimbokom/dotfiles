@@ -1,24 +1,87 @@
 #!/usr/bin/env bash
 command -v jq >/dev/null || exit 0
 input="$(cat)"
-cache="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-claude-usage"
-mkdir -p "$(dirname "$cache")"
 
+dir="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-claude-usage"
+[ -f "$dir" ] && rm -f "$dir"
+mkdir -p "$dir"
+
+cache_key() {
+  local top
+  top="$(
+    cd "$1" 2>/dev/null || exit 1
+    git rev-parse --show-toplevel 2>/dev/null || pwd -P
+  )" || top="$1"
+  printf '%s' "$top" | md5 -q
+}
+
+root="$(printf '%s' "$input" | jq -r '.workspace.project_dir // .cwd // empty')"
 eval "$(printf '%s' "$input" | jq -r '
   def n: if . == null then "" else (tonumber | floor | tostring) end;
+  def t: if . == null then "" else tostring end;
   "ctx=\(.context_window.used_percentage | n)",
   "h5=\(.rate_limits.five_hour.used_percentage | n)",
-  "d7=\(.rate_limits.seven_day.used_percentage | n)"
-')"
+  "d7=\(.rate_limits.seven_day.used_percentage | n)",
+  "h5r=\(.rate_limits.five_hour.resets_at | t)",
+  "d7r=\(.rate_limits.seven_day.resets_at | t)"
+' 2>/dev/null)" || true
+
+if [ "$h5" = 0 ] && [ -n "$d7" ] && [ "$d7" != 0 ]; then
+  h5=; h5r=
+fi
+if [ "$d7" = 0 ] && [ -n "$h5" ] && [ "$h5" != 0 ]; then
+  d7=; d7r=
+fi
+
+if [ -n "$root" ]; then
+  ctxfile="$dir/c-$(cache_key "$root")"
+  old_ctx=
+  [ -f "$ctxfile" ] && old_ctx="$(grep -E '^ctx=' "$ctxfile" 2>/dev/null | cut -d= -f2-)"
+  [ -n "$ctx" ] || ctx="$old_ctx"
+  if [ -n "$ctx" ]; then
+    printf 'ctx=%s\n' "$ctx" > "$ctxfile.tmp.$$" && mv "$ctxfile.tmp.$$" "$ctxfile"
+  fi
+fi
+
+limits="$dir/limits"
+old_h5= old_d7= old_h5r= old_d7r=
+if [ -f "$limits" ]; then
+  eval "$(grep -E '^(h5|d7|h5r|d7r)=' "$limits" 2>/dev/null | sed -e 's/^h5r=/old_h5r=/' -e 's/^d7r=/old_d7r=/' -e 's/^h5=/old_h5=/' -e 's/^d7=/old_d7=/')"
+fi
+
+pick() {
+  local new="$1" newr="$2" old="$3" oldr="$4"
+  if [ -z "$new" ]; then
+    printf '%s %s' "$old" "$oldr"
+    return
+  fi
+  if [ -z "$old" ] || [ -z "$oldr" ] || [ "${newr:-0}" -gt "${oldr:-0}" ] 2>/dev/null; then
+    printf '%s %s' "$new" "$newr"
+    return
+  fi
+  if [ "$newr" = "$oldr" ] && [ "$new" -ge "${old:-0}" ] 2>/dev/null; then
+    printf '%s %s' "$new" "$newr"
+    return
+  fi
+  printf '%s %s' "$old" "$oldr"
+}
+
+read old_h5 old_h5r <<EOF
+$(pick "$h5" "$h5r" "$old_h5" "$old_h5r")
+EOF
+read old_d7 old_d7r <<EOF
+$(pick "$d7" "$d7r" "$old_d7" "$old_d7r")
+EOF
 
 {
-  printf 'ctx=%s\n' "$ctx"
-  printf 'h5=%s\n' "$h5"
-  printf 'd7=%s\n' "$d7"
-} > "$cache" 2>/dev/null || true
+  printf 'h5=%s\n' "$old_h5"
+  printf 'd7=%s\n' "$old_d7"
+  printf 'h5r=%s\n' "$old_h5r"
+  printf 'd7r=%s\n' "$old_d7r"
+} > "$limits.tmp.$$" && mv "$limits.tmp.$$" "$limits"
 
 plain=
-[ -n "$ctx" ] && plain="$plain 󰧑 ${ctx}%"
-[ -n "$h5" ] && plain="$plain 󰔛 ${h5}%"
-[ -n "$d7" ] && plain="$plain 󰨳 ${d7}%"
+[ -n "$ctx" ] && plain="$plain ctx:${ctx}%"
+[ -n "$old_h5" ] && plain="$plain 5h:${old_h5}%"
+[ -n "$old_d7" ] && plain="$plain w:${old_d7}%"
 printf '%s\n' "${plain# }"
