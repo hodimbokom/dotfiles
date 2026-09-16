@@ -29,6 +29,21 @@ gss() {
   git switch "$b"
 }
 
+grm() {
+  git fetch origin || return
+  local onto="${1:-main}"
+  case "$onto" in
+    origin/*) git rebase "$onto" ;;
+    *)
+      if git rev-parse --verify -q "origin/$onto" >/dev/null; then
+        git rebase "origin/$onto"
+      else
+        git rebase "$onto"
+      fi
+      ;;
+  esac
+}
+
 alias doc='$HOME/Documents'
 alias dow='$HOME/Downloads'
 alias pet='$HOME/Documents/work/pets'
