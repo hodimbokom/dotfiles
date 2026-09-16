@@ -53,6 +53,7 @@ alias work='$HOME/Documents/work'
 alias tmuxk='tmux kill-session -t'
 alias tmuxa='tmux attach -t'
 alias tmuxl='tmux list-sessions'
+alias dots='cctask dots'
 
 alias cat='bat --style=plain'
 alias ls='eza'

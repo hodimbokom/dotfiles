@@ -18,6 +18,7 @@ usage() {
 cctask — one task, one worktree, one tmux window.
 
   cctask main                    general window on the main checkout (no task branch)
+  cctask dots                    separate session for ~/.config; Claude without subagents
   cctask BAC-123                 create/reuse a worktree and tmux window for BAC-123
   cctask BAC-123 feat/BAC-123    same, with an explicit branch name
   cctask done                    remove the current worktree (branch and tmux stay)
@@ -80,6 +81,10 @@ while [ $# -gt 0 ]; do
       [ "$action" = start ] && [ -z "$task" ] || die "unexpected argument: $1"
       action=main
       ;;
+    dots|dotfiles)
+      [ "$action" = start ] && [ -z "$task" ] || die "unexpected argument: $1"
+      action=dots
+      ;;
     -*) die "unknown option: $1" ;;
     *)
       [ "$action" = start ] || die "cctask $action takes no arguments"
@@ -92,16 +97,14 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-command -v git >/dev/null || die "git not found"
-
 start_window() {
-  local window="$1" dir="$2" editor claude_pane shell_pane
+  local window="$1" dir="$2" claude_cmd="${3:-claude}" editor claude_pane shell_pane
   editor="$(tmux list-panes -t "$window" -F '#{pane_id}' | head -1)"
   tmux set-option -p -t "$editor" @cctask_role editor
   tmux send-keys -t "$editor" 'nvim .' C-m
   claude_pane="$(tmux split-window -h -l 50% -t "$editor" -c "$dir" -P -F '#{pane_id}')"
   tmux set-option -p -t "$claude_pane" @cctask_role claude
-  tmux send-keys -t "$claude_pane" 'claude' C-m
+  tmux send-keys -t "$claude_pane" "$claude_cmd" C-m
   shell_pane="$(tmux split-window -v -l 30% -t "$editor" -c "$dir" -P -F '#{pane_id}')"
   tmux set-option -p -t "$shell_pane" @cctask_role shell
   tmux select-pane -t "$editor"
@@ -113,11 +116,11 @@ find_window() {
 }
 
 attach_window() {
-  local session="$1" name="$2" dir="$3" window
+  local session="$1" name="$2" dir="$3" claude_cmd="${4:-claude}" window
   if ! tmux has-session -t="$session" 2>/dev/null; then
     echo "==> creating tmux session '$session' with window '$name'"
     window="$(tmux new-session -d -s "$session" -n "$name" -c "$dir" -P -F '#{window_id}')"
-    start_window "$window" "$dir"
+    start_window "$window" "$dir" "$claude_cmd"
   else
     window="$(find_window "$session" "$name")"
     if [ -n "$window" ]; then
@@ -125,7 +128,7 @@ attach_window() {
     else
       echo "==> adding tmux window '$name' to session '$session'"
       window="$(tmux new-window -t "=$session" -n "$name" -c "$dir" -P -F '#{window_id}')"
-      start_window "$window" "$dir"
+      start_window "$window" "$dir" "$claude_cmd"
     fi
   fi
   tmux select-window -t "$window"
@@ -145,6 +148,10 @@ repo_roots() {
   [ -d "$main_root/.git" ] || main_root="$repo_root"
   repo_name="$(basename "$main_root")"
 }
+
+if [ "$action" != dots ]; then
+  command -v git >/dev/null || die "git not found"
+fi
 
 if [ "$action" = done ]; then
   [ -z "$task" ] || die "cctask done takes no arguments"
@@ -181,10 +188,26 @@ if [ "$action" = main ]; then
   exit 0
 fi
 
+if [ "$action" = dots ]; then
+  command -v tmux >/dev/null || die "tmux not found"
+  dir="${HOME}/.config"
+  [ -d "$dir" ] || die "$dir not found"
+  echo "session: dotfiles"
+  echo "dir:     $dir"
+  echo
+  if [ "$dry_run" -eq 1 ]; then
+    echo "would ensure tmux session 'dotfiles' in $dir"
+    exit 0
+  fi
+  attach_window dotfiles main "$dir" \
+    "claude --setting-sources project,local --disallowedTools Task,Agent"
+  exit 0
+fi
+
 [ -n "$task" ] || { usage >&2; exit 2; }
 
 case "$task" in
-  main|work|done) die "'$task' is reserved; use 'cctask main' for the general window" ;;
+  main|work|done|dots|dotfiles) die "'$task' is reserved; use 'cctask main' or 'cctask dots'" ;;
   *[!A-Za-z0-9._-]*) die "task '$task' may only contain letters, digits, '.', '_' and '-'" ;;
   ""|.|..)           die "invalid task name: '$task'" ;;
 esac
