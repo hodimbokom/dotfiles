@@ -1,33 +1,62 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
+failed=0
 added="$(git diff --cached --unified=0 --no-color -- . \
   | grep -E '^\+' | grep -Ev '^\+\+\+' || true)"
-
-[ -n "$added" ] || exit 0
+names="$(git diff --cached --name-only --diff-filter=ACMR -- . || true)"
 
 scan() {
-  local label="$1" regex="$2" hit
-  hit="$(printf '%s\n' "$added" | grep -nEi -e "$regex" || true)"
+  local label="$1" regex="$2" haystack="$3" hit
+  [ -n "$haystack" ] || return 0
+  hit="$(printf '%s\n' "$haystack" | grep -nEi -e "$regex" || true)"
   [ -n "$hit" ] || return 0
   echo "  [$label]"
   printf '%s\n' "$hit" | sed 's/^/      /'
   return 1
 }
 
-failed=0
+while IFS='|' read -r label regex; do
+  [ -n "$label" ] || continue
+  scan "$label" "$regex" "$names" || failed=1
+done <<'EOF'
+private key file|(^|/)id_(rsa|dsa|ecdsa|ed25519)$|\.(pem|p12|pfx)$
+netrc/npmrc|(^|/)\.(netrc|npmrc|pypirc|pgpass|git-credentials)$
+credentials file|(credentials|secrets)\.json$|(^|/)jira\.env$|(^|/)(service-account.*\.json|google-services\.json)$
+EOF
 
-scan "GitHub token"      'gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,}' || failed=1
-scan "Anthropic key"     'sk-ant-[A-Za-z0-9_-]{20,}'                               || failed=1
-scan "OpenAI key"        'sk-(proj-)?[A-Za-z0-9]{32,}'                             || failed=1
-scan "Slack token"       'xox[baprs]-[A-Za-z0-9-]{10,}'                            || failed=1
-scan "GitLab token"      'glpat-[A-Za-z0-9_-]{16,}'                                || failed=1
-scan "Google API key"    'AIza[0-9A-Za-z_-]{35}'                                   || failed=1
-scan "AWS access key"    'AKIA[0-9A-Z]{16}'                                        || failed=1
-scan "private key"       '-----BEGIN [A-Z ]*PRIVATE KEY-----'                      || failed=1
-scan "npm auth token"    '_authToken[[:space:]]*=[[:space:]]*[^$[:space:]]'         || failed=1
-scan "bearer token"      'authorization:[[:space:]]*bearer[[:space:]]+[A-Za-z0-9._-]{16,}' || failed=1
-scan "inline secret"     '(api[_-]?key|client[_-]?secret|access[_-]?token|password)[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9_/+=-]{12,}' || failed=1
+env_hit="$(printf '%s\n' "$names" | grep -Ei '(^|/)\.env($|\.)' | grep -Eiv '\.(example|sample|template)$' || true)"
+if [ -n "$env_hit" ]; then
+  echo "  [env file]"
+  printf '%s\n' "$env_hit" | sed 's/^/      /'
+  failed=1
+fi
+
+while IFS='|' read -r label regex; do
+  [ -n "$label" ] || continue
+  scan "$label" "$regex" "$added" || failed=1
+done <<'EOF'
+GitHub token|gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,}
+Anthropic key|sk-ant-[A-Za-z0-9_-]{20,}
+OpenAI key|sk-(proj-|or-)?[A-Za-z0-9]{32,}
+Slack token|xox[baprs]-[A-Za-z0-9-]{10,}
+Slack webhook|hooks\.slack\.com/services/[A-Za-z0-9/_-]+
+GitLab token|glpat-[A-Za-z0-9_-]{16,}
+Google API key|AIza[0-9A-Za-z_-]{35}
+Google OAuth secret|GOCSPX-[A-Za-z0-9_-]+
+AWS access key|AKIA[0-9A-Z]{16}
+AWS secret key|aws.{0,24}secret.{0,24}["'][A-Za-z0-9/+=]{40}["']
+npm token|npm_[A-Za-z0-9]{36}
+npm auth|_authToken[[:space:]]*=[[:space:]]*[^$[:space:]]
+Figma token|figd_[A-Za-z0-9_-]{20,}
+JWT|eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}
+DB URL|(postgres(ql)?|mysql|mongodb(\+srv)?|redis|amqp)://[^/[:space:]:]+:[^@[:space:]]+@
+bearer token|authorization:[[:space:]]*bearer[[:space:]]+[A-Za-z0-9._-]{16,}
+inline secret|(api[_-]?key|client[_-]?secret|access[_-]?token|auth[_-]?token|private[_-]?key|password)[[:space:]]*[:=][[:space:]]*["']?[A-Za-z0-9_/+=.-]{12,}
+EOF
+
+pem='-----BEGIN'
+scan "private key" "$pem [A-Z ]*PRIVATE KEY|$pem PGP PRIVATE KEY" "$added" || failed=1
 
 if [ "$failed" -ne 0 ]; then
   cat >&2 <<'EOF'
