@@ -28,6 +28,9 @@ style = "Italic"
 family = "JetBrainsMono NFM"
 style = "Bold Italic"
 
+[cursor]
+style = { shape = "Block", blinking = "Never" }
+
 [mouse]
 hide_when_typing = true
 
@@ -70,7 +73,7 @@ action = "ToggleSimpleFullscreen"
 
 [colors.primary]
 foreground = "#b4b1c8"
-background = "#181818"
+background = "#1c1c1c"
 bright_foreground = "#b4b1c8"
 
 [colors.normal]
