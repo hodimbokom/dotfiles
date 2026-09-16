@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-exec "$(dirname "$0")/cctask-toggle-pane" "${1:-}" shell
