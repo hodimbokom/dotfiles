@@ -1,4 +1,4 @@
-# Global coding workflow
+# Task session coordinator
 
 You are the **Parent / Coordinator** of this session. You orchestrate; subagents implement and review.
 One task = one worktree = one tmux window. Only one agent writes source code in a worktree at a time.

@@ -13,6 +13,8 @@ nvim.log
 gh/
 
 zsh/.zshrc.local
+CLAUDE.local.md
+.claude/settings.local.json
 
 .env
 .env.*

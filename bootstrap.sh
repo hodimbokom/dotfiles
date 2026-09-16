@@ -5,6 +5,13 @@ repo="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 claude_home="$HOME/.claude"
 backup_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backup-$(date +%Y%m%d-%H%M%S)"
 
+backup() {
+  [ -e "$1" ] || [ -L "$1" ] || return 0
+  mkdir -p "$backup_dir"
+  mv "$1" "$backup_dir/$(basename "$1")"
+  echo "backup $1 -> $backup_dir/$(basename "$1")"
+}
+
 link() {
   local src="$repo/$1" dest="$2"
 
@@ -19,9 +26,7 @@ link() {
   fi
 
   if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-    mkdir -p "$backup_dir"
-    mv "$dest" "$backup_dir/$(basename "$dest")"
-    echo "backup $dest -> $backup_dir/$(basename "$dest")"
+    backup "$dest"
   fi
 
   mkdir -p "$(dirname "$dest")"
@@ -29,9 +34,27 @@ link() {
   echo "link   $dest"
 }
 
-mkdir -p "$claude_home/agents"
+write_import() {
+  local src="$repo/$1" dest="$2" want="@$src"
 
-link claude/CLAUDE.md                      "$claude_home/CLAUDE.md"
+  if [ ! -e "$src" ]; then
+    echo "skip   $dest (missing $src)"
+    return
+  fi
+
+  if [ -f "$dest" ] && [ ! -L "$dest" ] && [ "$(cat "$dest")" = "$want" ]; then
+    echo "ok     $dest"
+    return
+  fi
+
+  backup "$dest"
+  mkdir -p "$(dirname "$dest")"
+  printf '%s\n' "$want" > "$dest"
+  echo "import $dest -> $src"
+}
+
+mkdir -p "$claude_home/agents"
+write_import claude/coordinator.md         "$claude_home/CLAUDE.md"
 link claude/settings.json                  "$claude_home/settings.json"
 link claude/agents/frontend-implementer.md "$claude_home/agents/frontend-implementer.md"
 link claude/agents/code-reviewer.md        "$claude_home/agents/code-reviewer.md"
