@@ -100,9 +100,9 @@ $(ps -axo pid=,ppid=,rss=,comm= | awk -v client="$2" -v server="$3" -v panes="$p
   }')
 EOF
   host="#[fg=#232136,bg=#3e8fb0] "
-  [ -n "$mb" ] && host="${host}all: ${mb}MB "
-  [ -n "$win" ] && [ "$win" != 0 ] && host="${host}curr: ${win}MB "
-  [ -n "$used" ] && host="${host}mem:$(printf '%3s' "$used")% "
+  [ -n "$mb" ] && host="${host}${mb}MB "
+  [ -n "$win" ] && [ "$win" != 0 ] && host="${host}${win}MB "
+  [ -n "$used" ] && host="${host}$(printf '%3s' "$used")% "
   dir="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-claude-usage"
   if [ -d "$dir" ]; then
     [ -f "$dir/limits" ] && eval "$(grep -E '^(h5|d7)=' "$dir/limits" 2>/dev/null)"
