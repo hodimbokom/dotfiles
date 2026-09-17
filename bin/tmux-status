@@ -139,14 +139,14 @@ claude() {
   tmux list-windows -a -F '#{session_name} #{window_id}' 2>/dev/null | while read -r sess wid; do
     [ "$sess" = "_cctask_hidden" ] && continue
     [ -n "$wid" ] || continue
-    pane="$(tmux list-panes -t "$wid" -F '#{pane_id} #{@cctask_role} #{pane_current_command}' 2>/dev/null \
-      | awk '$2 == "claude" || $3 == "claude" { print $1; exit }')"
+    pane="$(tmux list-panes -t "$wid" -F '#{pane_id} #{@cctask_role}' 2>/dev/null \
+      | awk '$2 == "claude" { print $1; exit }')"
     new=
     if [ -n "$pane" ]; then
-      text="$(tmux capture-pane -t "$pane" -p -J -S -20 2>/dev/null)" || text=
-      if printf '%s' "$text" | grep -qiE 'do you want to proceed|esc to cancel · tab to amend'; then
+      text="$(tmux capture-pane -t "$pane" -p -J -S -15 2>/dev/null | tail -n 10)" || text=
+      if printf '%s' "$text" | grep -qiE 'do you want to proceed|esc to cancel'; then
         new=' #[fg=#eb6f92]?'
-      elif printf '%s' "$text" | grep -qiE 'waiting for [0-9]+ background agent|to interrupt|thinking|ctrl\+b to run in background'; then
+      elif printf '%s\n' "$text" | grep -v '· done' | grep -qiE 'to interrupt|ctrl\+b to run in background|waiting for [0-9]+ background|[0-9]+s ·|↓ [0-9.]+k tokens|(running|waiting|thinking)…'; then
         new=' #[fg=#f6c177]●'
       elif printf '%s' "$text" | grep -q '· done'; then
         new=' #[fg=#9ccfd8]✓'
