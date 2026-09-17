@@ -54,7 +54,6 @@
       "Read(./**/id_rsa*)",
       "Read(~/.ssh/**)",
       "Read(~/.npmrc)",
-      "Bash(git push:*)",
       "Bash(git reset --hard:*)",
       "Bash(git clean:*)",
       "Bash(git rebase:*)",
@@ -65,6 +64,7 @@
       "Bash(sudo:*)"
     ],
     "ask": [
+      "Bash(git push:*)",
       "Bash(git commit:*)",
       "Bash(gh pr create:*)",
       "Bash(gh pr merge:*)",
