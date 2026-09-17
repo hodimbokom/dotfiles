@@ -200,7 +200,7 @@ if [ "$action" = dots ]; then
     exit 0
   fi
   attach_window dotfiles main "$dir" \
-    "claude --setting-sources project,local --disallowedTools Task,Agent"
+    "claude --disallowedTools Task,Agent"
   exit 0
 fi
 
