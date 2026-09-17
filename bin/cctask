@@ -291,10 +291,21 @@ if [ -d "$worktree_dir" ]; then
         echo "    copied $entry"
       fi
     done < "$worktree_dir/.worktreeinclude"
-  elif [ "$dry_run" -eq 0 ] && compgen -G "$main_root/.env*" >/dev/null 2>&1 && ! compgen -G "$worktree_dir/.env*" >/dev/null 2>&1; then
-    echo
-    echo "note: the main checkout has .env files that this worktree does not."
-    echo "      Nothing was copied. Set up machine-local env yourself if the app needs it."
+  fi
+  if [ "$dry_run" -eq 0 ]; then
+    env_files="$(find "$main_root" -name '.env' -not -path '*/node_modules/*' 2>/dev/null)"
+    if [ -n "$env_files" ]; then
+      echo
+      echo "==> copying .env files from the main checkout"
+      while IFS= read -r envfile; do
+        rel="${envfile#"$main_root"/}"
+        if [ ! -e "$worktree_dir/$rel" ]; then
+          mkdir -p "$(dirname "$worktree_dir/$rel")"
+          cp "$envfile" "$worktree_dir/$rel"
+          echo "    copied $rel"
+        fi
+      done <<< "$env_files"
+    fi
   fi
 fi
 
