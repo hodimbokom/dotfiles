@@ -74,6 +74,10 @@ export FZF_CTRL_T_OPTS='--preview "bat --style=plain --color=always {} 2>/dev/nu
 export FZF_ALT_C_OPTS='--preview "eza -alg {}"'
 source $(brew --prefix)/opt/fzf/shell/key-bindings.zsh
 
+eval "$(starship init zsh)"
+
+[[ -f "$ZDOTDIR/.zshrc.local" ]] && source "$ZDOTDIR/.zshrc.local"
+
 autosuggest-tab() {
   if [[ -n ${POSTDISPLAY-} ]]; then
     zle autosuggest-accept
@@ -88,7 +92,3 @@ for seq in '^[[Z' '^[[27;2;9~' '^[[9;2u'; do
   bindkey -M emacs "$seq" complete-word
   bindkey -M viins "$seq" complete-word
 done
-
-eval "$(starship init zsh)"
-
-[[ -f "$ZDOTDIR/.zshrc.local" ]] && source "$ZDOTDIR/.zshrc.local"
