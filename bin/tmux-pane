@@ -58,6 +58,8 @@ if [ -n "$hidden" ]; then
   tmux set-option -wu -t "$win" "$opt"
   new="$(find_pane "$role")"
   [ -n "$new" ] && tmux set-option -p -t "$new" @cctask_role "$role"
+  n="$(tmux list-windows -t =_cctask_hidden -F 'x' 2>/dev/null | grep -c . || true)"
+  [ "${n:-0}" -eq 0 ] && tmux kill-session -t=_cctask_hidden 2>/dev/null || true
   exit 0
 fi
 
@@ -73,4 +75,7 @@ tmux has-session -t=_cctask_hidden 2>/dev/null || tmux new-session -d -s _cctask
 hid="$(tmux break-pane -d -P -F '#{window_id}' -s "$cur")"
 tmux move-window -d -s "$hid" -t =_cctask_hidden:
 tmux kill-window -t =_cctask_hidden:_dummy 2>/dev/null || true
+sess="$(tmux display-message -t "$win" -p '#{session_name}')"
+wname="$(tmux display-message -t "$win" -p '#{window_name}')"
+tmux rename-window -t "$hid" "${sess}::${wname}::${role}"
 tmux set-option -w -t "$win" "$opt" "$hid"
