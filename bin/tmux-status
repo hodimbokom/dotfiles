@@ -141,6 +141,11 @@ claude() {
     [ -n "$wid" ] || continue
     pane="$(tmux list-panes -t "$wid" -F '#{pane_id} #{@cctask_role}' 2>/dev/null \
       | awk '$2 == "claude" { print $1; exit }')"
+    if [ -z "$pane" ]; then
+      pane="$(tmux list-panes -t "$wid" -F '#{pane_id} #{pane_at_top} #{pane_at_right} #{pane_current_command}' 2>/dev/null \
+        | awk '$2==1 && $3==1 && $4 ~ /^(claude|[0-9]+\.[0-9])/ { print $1; exit }')"
+      [ -n "$pane" ] && tmux set-option -p -t "$pane" @cctask_role claude
+    fi
     new=
     if [ -n "$pane" ]; then
       text="$(tmux capture-pane -t "$pane" -p -J -S -15 2>/dev/null | tail -n 10)" || text=
