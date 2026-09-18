@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 src="$HOME/.config/bin/tmux-status-watch.c"
 out="$HOME/.cache/tmux-status-watch"
+server="$1"
 mkdir -p "$HOME/.cache"
+[ -n "$server" ] || exit 1
 if [ ! -x "$out" ] || [ "$src" -nt "$out" ]; then
   /usr/bin/clang -Os -framework Carbon -framework CoreServices -o "$out" "$src" || exit 1
+fi
+old="$(pgrep -f "$out $server" || true)"
+if [ -n "$old" ]; then
+  kill $old 2>/dev/null || true
+  sleep 0.2
 fi
 if [ -x /opt/homebrew/bin/reattach-to-user-namespace ] && [ -z "$TMUX_KB_REATTACHED" ]; then
   export TMUX_KB_REATTACHED=1
