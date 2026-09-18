@@ -175,10 +175,16 @@ pane() {
   set_if @cctask_sys "$(sys_chip "$path" "$client" "$pid" "$wid")"
 }
 
+save() {
+  local s="$HOME/.config/tmux/plugins/tmux-continuum/scripts/continuum_save.sh"
+  [ -f "$s" ] && bash "$s"
+}
+
 case "${1:-all}" in
   git) git_up ;;
   sys) sys_up ;;
   light) clock_up; claude ;;
   pane) pane ;;
+  save) save ;;
   *) pane; clock_up; claude ;;
 esac

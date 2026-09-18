@@ -125,6 +125,8 @@ static void on_tick(CFRunLoopTimerRef t, void *i)
   watch();
   if (++ticks % 3 == 0)
     run("pane");
+  if (ticks % 12 == 0)
+    run("save");
 }
 
 int main(int argc, char **argv)
