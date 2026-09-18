@@ -86,6 +86,8 @@ autosuggest-tab() {
   fi
 }
 zle -N autosuggest-tab
+typeset -ga ZSH_AUTOSUGGEST_IGNORE_WIDGETS
+ZSH_AUTOSUGGEST_IGNORE_WIDGETS+=(autosuggest-tab)
 bindkey -M emacs '^I' autosuggest-tab
 bindkey -M viins '^I' autosuggest-tab
 for seq in '^[[Z' '^[[27;2;9~' '^[[9;2u'; do
