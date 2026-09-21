@@ -111,7 +111,7 @@ Always reply in Russian. Do not translate code, file paths, git branches, Jira k
 Be direct. No preamble, no flattery. If something is wrong or I am asking for the wrong thing, say so.
 Prefer the simplest change that fits the existing code over a clever or general one.
 
-Comments in code: only if they explain what the block does. One short sentence. No task keys, Jira numbers, ticket names, or "why we did this for BAC-…".
+Comments in code: only if they explain what the block does. One short sentence. No task keys, Jira numbers, ticket names, or "why we did this for BAC-…". No direct references to Figma node IDs/links or task names either.
 
 ## Outbound text (Jira, Slack, GitHub)
 
