@@ -126,4 +126,6 @@ Never frame by contrast. Forbidden: "this is X, not Y", "it's not X, it's Y", "n
 
 No LLM cadence. Do not use: "it's important to note", "this ensures", "in order to", "leverage", "robust", "comprehensive", "happy to", "great catch", stacked adjectives, lists of three, em-dash thesis lines.
 
+Keep it short. Say the fact and stop — no padding, no restating the obvious, no filler detail that doesn't change what the reader does next.
+
 Do not post anywhere unless I explicitly ask. Draft only.
