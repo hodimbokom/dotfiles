@@ -129,3 +129,5 @@ No LLM cadence. Do not use: "it's important to note", "this ensures", "in order 
 Keep it short. Say the fact and stop — no padding, no restating the obvious, no filler detail that doesn't change what the reader does next.
 
 Do not post anywhere unless I explicitly ask. Draft only.
+
+Code comments follow these same rules (English style, no contrast framing, no LLM cadence), on top of the one-sentence limit in Style above.
