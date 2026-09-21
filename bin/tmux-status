@@ -134,6 +134,18 @@ clock_chip() {
   printf '%s GE %s · %sTW %s ' "$foam" "$ge" "$twc" "$tw"
 }
 
+gh_chip() {
+  local login me
+  login="$(gh config get -h github.com user 2>/dev/null)" || login=
+  [ -n "$login" ] || return
+  me="$(git -C "$HOME/.config" remote get-url origin 2>/dev/null | sed -n 's#.*github.com[:/]\([^/]*\)/.*#\1#p')"
+  if [ -n "$me" ] && [ "$login" = "$me" ]; then
+    printf 'me · '
+  else
+    printf 'work · '
+  fi
+}
+
 claude() {
   local pane text new old sess wid
   tmux list-windows -a -F '#{session_name} #{window_id}' 2>/dev/null | while read -r sess wid; do
@@ -168,11 +180,13 @@ claude() {
 git_up() { active && set_if @cctask_git "$(git_chip "$path")"; }
 sys_up() { active && set_if @cctask_sys "$(sys_chip "$path" "$client" "$pid" "$wid")"; }
 clock_up() { set_if @cctask_clock "$(clock_chip)"; }
+gh_up() { set_if @cctask_gh "$(gh_chip)"; }
 
 pane() {
   active || return
   set_if @cctask_git "$(git_chip "$path")"
   set_if @cctask_sys "$(sys_chip "$path" "$client" "$pid" "$wid")"
+  gh_up
 }
 
 save() {
@@ -183,8 +197,8 @@ save() {
 case "${1:-all}" in
   git) git_up ;;
   sys) sys_up ;;
-  light) clock_up; claude ;;
+  light) clock_up; gh_up; claude ;;
   pane) pane ;;
   save) save ;;
-  *) pane; clock_up; claude ;;
+  *) pane; clock_up; gh_up; claude ;;
 esac
