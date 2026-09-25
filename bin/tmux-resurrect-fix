@@ -2,16 +2,17 @@
 set -eu
 
 tag_window() {
-  local win="$1" pane
-  pane="$(tmux list-panes -t "$win" -F '#{pane_id} #{pane_at_top} #{pane_at_bottom} #{pane_at_left} #{pane_at_right}' \
-    | awk '$2==1 && $4==1 && $5==0 { print $1; exit }')"
-  [ -n "$pane" ] && tmux set-option -p -t "$pane" @cctask_role editor
-  pane="$(tmux list-panes -t "$win" -F '#{pane_id} #{pane_at_top} #{pane_at_bottom} #{pane_at_left}' \
-    | awk '$2==0 && $3==1 && $4==1 { print $1; exit }')"
-  [ -n "$pane" ] && tmux set-option -p -t "$pane" @cctask_role shell
-  pane="$(tmux list-panes -t "$win" -F '#{pane_id} #{pane_at_top} #{pane_at_right}' \
-    | awk '$2==1 && $3==1 { print $1; exit }')"
-  [ -n "$pane" ] && tmux set-option -p -t "$pane" @cctask_role claude
+  local win="$1" pane cmd
+  while IFS=' ' read -r pane cmd; do
+    case "$cmd" in
+      nvim) tmux set-option -p -t "$pane" @cctask_role editor ;;
+      # claude sometimes reports its pane_current_command as a version string, not "claude".
+      claude|[0-9]*.[0-9]*) tmux set-option -p -t "$pane" @cctask_role claude ;;
+    esac
+  done < <(tmux list-panes -t "$win" -F '#{pane_id} #{pane_current_command}')
+  tmux list-panes -t "$win" -F '#{pane_id} #{@cctask_role}' \
+    | awk '$2 == "" { print $1 }' \
+    | while read -r pane; do tmux set-option -p -t "$pane" @cctask_role shell; done
 }
 
 find_window() {
@@ -118,15 +119,14 @@ drop_unnamed() {
 }
 
 restore() {
+  tmux list-windows -a -F '#{session_name} #{window_id}' 2>/dev/null \
+    | while read -r sess wid; do
+        [ "$sess" = "_cctask_hidden" ] && continue
+        tag_window "$wid"
+      done
   unpark
   drop_unnamed
   unzoom
-  tmux list-windows -a -F '#{session_name} #{window_id} #{window_panes}' 2>/dev/null \
-    | while read -r sess wid n; do
-        [ "$sess" = "_cctask_hidden" ] && continue
-        [ "${n:-0}" -ge 2 ] || continue
-        tag_window "$wid"
-      done
 }
 
 case "${1:-restore}" in
