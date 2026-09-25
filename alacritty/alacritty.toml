@@ -36,7 +36,7 @@ hide_when_typing = true
 
 [window]
 decorations = "None"
-opacity = 0.95
+opacity = 0.9
 
 [window.padding]
 x = 10
