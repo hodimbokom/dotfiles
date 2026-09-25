@@ -77,6 +77,7 @@ source $(brew --prefix)/opt/fzf/shell/key-bindings.zsh
 eval "$(starship init zsh)"
 
 [[ -f "$ZDOTDIR/.zshrc.local" ]] && source "$ZDOTDIR/.zshrc.local"
+[[ -f "$ZDOTDIR/aliases.local" ]] && source "$ZDOTDIR/aliases.local"
 
 autosuggest-tab() {
   if [[ -n ${POSTDISPLAY-} ]]; then
