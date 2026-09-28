@@ -1,0 +1,13 @@
+{
+  "cssTheme": "Minimal",
+  "theme": "system",
+  "showViewHeader": false,
+  "textFontFamily": "Hack Nerd Font",
+  "accentColor": "",
+  "baseFontSizeAction": true,
+  "translucency": false,
+  "interfaceFontFamily": "Hack Nerd Font",
+  "monospaceFontFamily": "Hack Nerd Font",
+  "baseFontSize": 17,
+  "nativeMenus": true
+}

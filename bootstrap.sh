@@ -69,6 +69,14 @@ link claude/skills/implement/SKILL.md      "$claude_home/skills/implement/SKILL.
 link claude/skills/review/SKILL.md         "$claude_home/skills/review/SKILL.md"
 link claude/skills/validate/SKILL.md       "$claude_home/skills/validate/SKILL.md"
 
+obsidian_vault="$(cat "$repo/obsidian/vault-path.local" 2>/dev/null || true)"
+if [ -n "$obsidian_vault" ]; then
+  link obsidian/appearance.json        "$obsidian_vault/.obsidian/appearance.json"
+  link obsidian/community-plugins.json "$obsidian_vault/.obsidian/community-plugins.json"
+else
+  echo "skip   obsidian appearance/community-plugins (no obsidian/vault-path.local)"
+fi
+
 for script in "$repo/bin/cctask" "$repo/bin/tmux-pane" "$repo/bin/tmux-status" "$repo/bin/tmux-status-watch" "$repo/bin/tmux-resurrect-fix" "$repo/bin/claude-statusline"; do
   if [ -f "$script" ] && [ ! -x "$script" ]; then
     chmod +x "$script"
