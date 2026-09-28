@@ -3,13 +3,17 @@
   "theme": "system",
   "showRibbon": false,
   "showViewHeader": false,
-  "textFontFamily": "Hack Nerd Font",
+  "textFontFamily": "JetBrainsMono NFM",
   "accentColor": "",
   "baseFontSizeAction": true,
   "translucency": false,
-  "interfaceFontFamily": "Hack Nerd Font",
-  "monospaceFontFamily": "Hack Nerd Font",
+  "interfaceFontFamily": "JetBrainsMono NFM",
+  "monospaceFontFamily": "JetBrainsMono NFM",
   "baseFontSize": 17,
   "nativeMenus": true,
-  "enabledCssSnippets": ["active-file-contrast"]
+  "enabledCssSnippets": [
+    "active-file-contrast",
+    "scrollbar",
+    "muted-text"
+  ]
 }

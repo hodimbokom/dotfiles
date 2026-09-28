@@ -18,7 +18,7 @@
   "chartWidth": "chart-default-width",
   "colorfulHeadings": true,
   "colorfulFrame": false,
-  "colorfulActiveStates": true,
+  "colorfulActiveStates": false,
   "trimNames": true,
   "labeledNav": true,
   "fullWidthMedia": true,

@@ -1,0 +1,4 @@
+/* Rose Pine Moon body text — softer than pure white, still fully readable. */
+body {
+  --text-normal: #e0def4;
+}

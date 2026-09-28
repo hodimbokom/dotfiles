@@ -1,0 +1,46 @@
+/* Thinner scrollbar, Rose Pine Moon colors, targeted at Obsidian's actual
+   scroll containers (editor, reading view, file explorer) rather than a
+   bare global selector, which doesn't reach them. */
+
+.cm-scroller,
+.markdown-preview-view,
+.workspace-leaf-content,
+.nav-files-container,
+.view-content {
+  scrollbar-width: thin;
+  scrollbar-color: #6e6a86 transparent;
+}
+
+.cm-scroller::-webkit-scrollbar,
+.markdown-preview-view::-webkit-scrollbar,
+.workspace-leaf-content::-webkit-scrollbar,
+.nav-files-container::-webkit-scrollbar,
+.view-content::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.cm-scroller::-webkit-scrollbar-track,
+.markdown-preview-view::-webkit-scrollbar-track,
+.workspace-leaf-content::-webkit-scrollbar-track,
+.nav-files-container::-webkit-scrollbar-track,
+.view-content::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb,
+.markdown-preview-view::-webkit-scrollbar-thumb,
+.workspace-leaf-content::-webkit-scrollbar-thumb,
+.nav-files-container::-webkit-scrollbar-thumb,
+.view-content::-webkit-scrollbar-thumb {
+  background-color: #6e6a86 !important;
+  border-radius: 4px !important;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb:hover,
+.markdown-preview-view::-webkit-scrollbar-thumb:hover,
+.workspace-leaf-content::-webkit-scrollbar-thumb:hover,
+.nav-files-container::-webkit-scrollbar-thumb:hover,
+.view-content::-webkit-scrollbar-thumb:hover {
+  background-color: #c4a7e7 !important;
+}

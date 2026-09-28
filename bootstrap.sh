@@ -77,6 +77,8 @@ if [ -n "$obsidian_vault" ]; then
     link "obsidian/plugins/$p/data.json" "$obsidian_vault/.obsidian/plugins/$p/data.json"
   done
   link obsidian/snippets/active-file-contrast.css "$obsidian_vault/.obsidian/snippets/active-file-contrast.css"
+  link obsidian/snippets/scrollbar.css             "$obsidian_vault/.obsidian/snippets/scrollbar.css"
+  link obsidian/snippets/muted-text.css            "$obsidian_vault/.obsidian/snippets/muted-text.css"
 else
   echo "skip   obsidian appearance/community-plugins (no obsidian/vault-path.local)"
 fi
