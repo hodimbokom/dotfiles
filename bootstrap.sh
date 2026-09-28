@@ -66,6 +66,7 @@ link claude/skills/log-note/SKILL.md       "$claude_home/skills/log-note/SKILL.m
 link claude/skills/research/SKILL.md       "$claude_home/skills/research/SKILL.md"
 link claude/skills/plan/SKILL.md           "$claude_home/skills/plan/SKILL.md"
 link claude/skills/implement/SKILL.md      "$claude_home/skills/implement/SKILL.md"
+link claude/skills/review/SKILL.md         "$claude_home/skills/review/SKILL.md"
 link claude/skills/validate/SKILL.md       "$claude_home/skills/validate/SKILL.md"
 
 for script in "$repo/bin/cctask" "$repo/bin/tmux-pane" "$repo/bin/tmux-status" "$repo/bin/tmux-status-watch" "$repo/bin/tmux-resurrect-fix" "$repo/bin/claude-statusline"; do

@@ -3,9 +3,9 @@
 Rules that apply on any call, regardless of which skill is running.
 One task = one worktree = one tmux window. Only one agent writes source code in a worktree at a time.
 
-Work on a task runs through four skills, in order: `research` → `plan` → `implement` (once per
-slice) → `validate` (rerunnable after fixes). Fixing between validate runs is normal conversation,
-not a skill.
+Work on a task runs through these skills, in order: `research` → `plan` → `implement` (once per
+slice) → `review` (rerunnable after fixes) → `validate` (UI tasks only, rerunnable). Fixing between
+runs is normal conversation, not a skill.
 
 ## Never do without my explicit request
 

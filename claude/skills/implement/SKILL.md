@@ -16,7 +16,7 @@ whatever the project actually has, do not invent commands). Show `git status` an
 `git diff`. **Stop.** Do not commit. Do not start the next slice.
 
 When I explicitly ask to commit this slice (local only, per the Git commits rules in the baseline
-instructions), then start the next slice the same way, or move to the `validate` skill if that was
-the last one.
+instructions), then start the next slice the same way, or move to `review` (and `validate` too, if
+the task changed UI) if that was the last one.
 
 If I want changes before the commit, stay on this slice: fix, re-check, show the diff, stop again.
