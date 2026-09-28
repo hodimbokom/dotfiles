@@ -74,10 +74,11 @@
     "defaultMode": "default",
     "blockReadsOutsideWorkingDirectories": false
   },
-  "theme": "auto",
   "statusLine": {
     "type": "command",
     "command": "~/.config/bin/claude-statusline",
     "refreshInterval": 15
-  }
+  },
+  "theme": "auto",
+  "model": "sonnet"
 }
