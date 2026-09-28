@@ -11,6 +11,7 @@ Most sessions have nothing worth logging. That is a fine outcome — say so and 
 
 If something qualifies:
 
-1. Draft the note: one or two sentences, what happened and why, source linked inline (ticket key as `[[TICKET-KEY]]`, a Slack permalink, a PR URL, or a codebase path).
-2. Write it straight to the notes vault, following the format and location already established in the imported local notes instructions — correct filename (`YYYY-MM-DD - slug.md`), correct tags (`decision`/`gotcha`, `area/<domain>`, `source/slack` only when applicable). Invoking this skill is the explicit ask — no separate confirmation before writing.
-3. Show what got written.
+1. Read `~/.config/CLAUDE.local.md` for the vault's path, naming, and tag format.
+2. Draft the note: one or two sentences, what happened and why, source linked inline (ticket key as `[[TICKET-KEY]]`, a Slack permalink, a PR URL, or a codebase path).
+3. Write it straight to the notes vault, following the format from step 1. Invoking this skill is the explicit ask — no separate confirmation before writing.
+4. Show what got written.
