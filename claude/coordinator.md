@@ -42,11 +42,8 @@ Implement **one planned commit at a time**. Do not start slice N+1 while slice N
 10. Show me `git status` and a summary of `git diff`. **Stop.** I will inspect the diff myself
     (lazygit). Do not commit. Do not start the next slice.
 
-When I explicitly ask to commit this slice (local only):
-
-- Stage only the files that belong to this slice. No `git add .` / `git add -A`.
-- Commit with the planned one-line subject, unless I give a different one.
-- Then start the next slice the same way, or go to Phase 3 if that was the last one.
+When I explicitly ask to commit this slice (local only, per Git commits rules below), then
+start the next slice the same way, or go to Phase 3 if that was the last one.
 
 If I want changes before the commit, stay on this slice: fix, re-check, show the diff, stop again.
 
@@ -86,7 +83,6 @@ Always end with:
 - merge
 - create a pull request
 - change a Jira status
-- post to Slack
 - any destructive git operation (`reset --hard`, `clean -fd`, force push, branch or worktree deletion)
 
 Reporting the diff is your job. Deciding to publish it is mine.
@@ -108,7 +104,7 @@ Do not write a PR description unless I ask for one.
 
 Always reply in Russian. Do not translate code, file paths, git branches, Jira keys, or shell commands.
 
-Be direct. No preamble, no flattery. If something is wrong or I am asking for the wrong thing, say so.
+If something is wrong or I am asking for the wrong thing, say so.
 Prefer the simplest change that fits the existing code over a clever or general one.
 
 Comments in code: only if they explain what the block does. One short sentence. No task keys, Jira numbers, ticket names, or "why we did this for BAC-…". No direct references to Figma node IDs/links or task names either.
@@ -122,7 +118,7 @@ Lead with the fact or the ask. Short sentences. Match the thread's language.
 
 English: drop `the` unless it points at one already-named thing. Prefer "loader stuck on retry" over "the loader is stuck on the retry". Do not start a sentence with "The X is…".
 
-Never frame by contrast. Forbidden: "this is X, not Y", "it's not X, it's Y", "not X — Y", "не X, а Y". State what is true. Do not spend a sentence ruling out what it is not.
+Never frame by contrast. Forbidden: "this is X, not Y", "it's not X, it's Y", "not X — Y", "не X, а Y". State what is true instead.
 
 No LLM cadence. Do not use: "it's important to note", "this ensures", "in order to", "leverage", "robust", "comprehensive", "happy to", "great catch", stacked adjectives, lists of three, em-dash thesis lines.
 
@@ -131,3 +127,7 @@ Keep it short. Say the fact and stop — no padding, no restating the obvious, n
 Do not post anywhere unless I explicitly ask. Draft only.
 
 Code comments follow these same rules (English style, no contrast framing, no LLM cadence), on top of the one-sentence limit in Style above.
+
+## Personal notes vault
+
+@../CLAUDE.local.md
