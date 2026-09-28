@@ -1,6 +1,6 @@
 ---
 name: log-note
-description: Check whether the current session or a task's diff has anything worth recording in the personal notes vault (a decision or a gotcha), propose it, and write it only after explicit confirmation. Use when the user asks to log, note, or record something, or asks whether this session is worth logging.
+description: Check whether the current session or a task's diff has anything worth recording in the personal notes vault (a decision or a gotcha), and write it straight there if so. Use when the user asks to log, note, or record something, or asks whether this session is worth logging.
 ---
 
 # log-note
@@ -12,7 +12,5 @@ Most sessions have nothing worth logging. That is a fine outcome — say so and 
 If something qualifies:
 
 1. Draft the note: one or two sentences, what happened and why, source linked inline (ticket key as `[[TICKET-KEY]]`, a Slack permalink, a PR URL, or a codebase path).
-2. Show the draft. Wait for an explicit OK before writing anything.
-3. On OK, write it to the notes vault following the format and location already established in the imported local notes instructions — correct filename (`YYYY-MM-DD - slug.md`), correct tags (`decision`/`gotcha`, `area/<domain>`, `source/slack` only when applicable).
-
-Never write without the explicit OK from step 2, even when the draft looks obviously right.
+2. Write it straight to the notes vault, following the format and location already established in the imported local notes instructions — correct filename (`YYYY-MM-DD - slug.md`), correct tags (`decision`/`gotcha`, `area/<domain>`, `source/slack` only when applicable). Invoking this skill is the explicit ask — no separate confirmation before writing.
+3. Show what got written.
