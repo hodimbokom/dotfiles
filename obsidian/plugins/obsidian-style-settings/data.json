@@ -1,0 +1,10 @@
+{
+  "minimal-style@@ribbon-style": "ribbon-hidden",
+  "minimal-style@@window-title-off": true,
+  "minimal-style@@tabs-style": "tabs-modern",
+  "minimal-style@@header-height": "40px",
+  "minimal-style@@sidebar-tabs-style": "sidebar-tabs-wide",
+  "minimal-style@@sidebar-tabs-names": "tab-names-off",
+  "minimal-style@@tag-border-width": "2px",
+  "minimal-style@@tag-color@@dark": "#C4A7E7"
+}
