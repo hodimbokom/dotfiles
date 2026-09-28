@@ -73,7 +73,7 @@ obsidian_vault="$(cat "$repo/obsidian/vault-path.local" 2>/dev/null || true)"
 if [ -n "$obsidian_vault" ]; then
   link obsidian/appearance.json        "$obsidian_vault/.obsidian/appearance.json"
   link obsidian/community-plugins.json "$obsidian_vault/.obsidian/community-plugins.json"
-  for p in obsidian-style-settings obsidian-minimal-settings obsidian-hider; do
+  for p in obsidian-style-settings obsidian-minimal-settings obsidian-hider tags-color-files; do
     link "obsidian/plugins/$p/data.json" "$obsidian_vault/.obsidian/plugins/$p/data.json"
   done
 else

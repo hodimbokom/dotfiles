@@ -1,0 +1,20 @@
+{
+  "generalRules": [
+    { "tag": "decision", "color": "#c4a7e7" },
+    { "tag": "gotcha", "color": "#eb6f92" },
+    { "tag": "backlog", "color": "#f6c177" },
+    { "tag": "area/baccarat", "color": "#3e8fb0" },
+    { "tag": "area/rgs", "color": "#9ccfd8" },
+    { "tag": "area/tmux", "color": "#ea9a97" },
+    { "tag": "area/dotfiles", "color": "#6e6a86" },
+    { "tag": "area/claude-code", "color": "#908caa" },
+    { "tag": "area/pixi", "color": "#56526e" },
+    { "tag": "area/tooling", "color": "#c4a7e7" },
+    { "tag": "area/debug-tools", "color": "#eb6f92" }
+  ],
+  "colorStrategy": "dots-before-text",
+  "dotSize": "default",
+  "applyToBases": false,
+  "applyToLinks": false,
+  "dismissedChangelogVersion": "2.3.0"
+}
