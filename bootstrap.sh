@@ -35,7 +35,8 @@ link() {
 }
 
 write_import() {
-  local src="$repo/$1" dest="$2" want="@$src"
+  local src="$repo/$1" dest="$2"
+  local want="@$src"
 
   if [ ! -e "$src" ]; then
     echo "skip   $dest (missing $src)"
@@ -54,7 +55,7 @@ write_import() {
 }
 
 mkdir -p "$claude_home/agents"
-write_import claude/coordinator.md         "$claude_home/CLAUDE.md"
+write_import claude/baseline.md            "$claude_home/CLAUDE.md"
 link claude/settings.json                  "$claude_home/settings.json"
 link claude/agents/frontend-implementer.md "$claude_home/agents/frontend-implementer.md"
 link claude/agents/code-reviewer.md        "$claude_home/agents/code-reviewer.md"
