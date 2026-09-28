@@ -76,6 +76,7 @@ if [ -n "$obsidian_vault" ]; then
   for p in obsidian-style-settings obsidian-minimal-settings obsidian-hider tags-color-files; do
     link "obsidian/plugins/$p/data.json" "$obsidian_vault/.obsidian/plugins/$p/data.json"
   done
+  link obsidian/snippets/active-file-contrast.css "$obsidian_vault/.obsidian/snippets/active-file-contrast.css"
 else
   echo "skip   obsidian appearance/community-plugins (no obsidian/vault-path.local)"
 fi

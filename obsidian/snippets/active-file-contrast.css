@@ -1,0 +1,7 @@
+/* Keep the active/selected file row readable regardless of any tag-color dot on it. */
+body {
+  --nav-item-background-active: #393552;
+  --nav-item-background-selected: #393552;
+  --nav-item-color-active: #e0def4;
+  --nav-item-color-selected: #e0def4;
+}

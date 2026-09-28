@@ -10,5 +10,6 @@
   "interfaceFontFamily": "Hack Nerd Font",
   "monospaceFontFamily": "Hack Nerd Font",
   "baseFontSize": 17,
-  "nativeMenus": true
+  "nativeMenus": true,
+  "enabledCssSnippets": ["active-file-contrast"]
 }
