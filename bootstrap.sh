@@ -60,7 +60,13 @@ link claude/settings.json                  "$claude_home/settings.json"
 link claude/agents/frontend-implementer.md "$claude_home/agents/frontend-implementer.md"
 link claude/agents/code-reviewer.md        "$claude_home/agents/code-reviewer.md"
 link claude/agents/ui-validator.md         "$claude_home/agents/ui-validator.md"
+link claude/agents/researcher.md           "$claude_home/agents/researcher.md"
+link claude/agents/planner.md              "$claude_home/agents/planner.md"
 link claude/skills/log-note/SKILL.md       "$claude_home/skills/log-note/SKILL.md"
+link claude/skills/research/SKILL.md       "$claude_home/skills/research/SKILL.md"
+link claude/skills/plan/SKILL.md           "$claude_home/skills/plan/SKILL.md"
+link claude/skills/implement/SKILL.md      "$claude_home/skills/implement/SKILL.md"
+link claude/skills/validate/SKILL.md       "$claude_home/skills/validate/SKILL.md"
 
 for script in "$repo/bin/cctask" "$repo/bin/tmux-pane" "$repo/bin/tmux-status" "$repo/bin/tmux-status-watch" "$repo/bin/tmux-resurrect-fix" "$repo/bin/claude-statusline"; do
   if [ -f "$script" ] && [ ! -x "$script" ]; then
