@@ -1,6 +1,7 @@
 {
   "cssTheme": "Minimal",
   "theme": "system",
+  "showRibbon": false,
   "showViewHeader": false,
   "textFontFamily": "Hack Nerd Font",
   "accentColor": "",
