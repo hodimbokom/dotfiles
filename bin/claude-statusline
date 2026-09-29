@@ -2,7 +2,7 @@
 command -v jq >/dev/null || exit 0
 input="$(cat)"
 
-dir="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-claude-usage"
+dir="${XDG_CACHE_HOME:-$HOME/.cache}/claude-usage"
 [ -f "$dir" ] && rm -f "$dir"
 mkdir -p "$dir"
 

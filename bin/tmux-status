@@ -63,18 +63,8 @@ git_chip() {
   printf '#[fg=#6e6a86]%s #[fg=#b4b1c8]%s %s%s%s%s ' "$kind" "$b" "$state" "$op" "$sync" "$main"
 }
 
-warn() {
-  if [ "$1" -ge 80 ] 2>/dev/null; then
-    printf '#[fg=#eb6f92,bg=#f6c177]'
-  elif [ "$1" -ge 50 ] 2>/dev/null; then
-    printf '#[fg=#b4637a,bg=#f6c177]'
-  else
-    printf '#[fg=#232136,bg=#f6c177]'
-  fi
-}
-
 sys_chip() {
-  local used mb win host usage_chip ctx= h5= d7= dir top key panes
+  local used mb win host panes
   used="$(memory_pressure 2>/dev/null | awk -F': ' '/free percentage/ { gsub(/[^0-9]/, "", $2); print 100 - $2 }')"
   panes="$(tmux list-panes -t "$4" -F '#{pane_pid}' 2>/dev/null | tr '\n' ' ')"
   read mb win <<EOF
@@ -103,22 +93,7 @@ EOF
   [ -n "$mb" ] && host="${host}${mb}MB "
   [ -n "$win" ] && [ "$win" != 0 ] && host="${host}${win}MB "
   [ -n "$used" ] && host="${host}$(printf '%3s' "$used")% "
-  dir="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-claude-usage"
-  if [ -d "$dir" ]; then
-    [ -f "$dir/limits" ] && eval "$(grep -E '^(h5|d7)=' "$dir/limits" 2>/dev/null)"
-    if [ -n "$1" ]; then
-      top="$(cd "$1" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null || echo "$1")"
-      key="$(printf '%s' "$top" | md5 -q)"
-      [ -f "$dir/c-$key" ] && eval "$(grep -E '^ctx=' "$dir/c-$key" 2>/dev/null)"
-    fi
-  fi
-  if [ -n "$ctx$h5$d7" ]; then
-    [ -n "$ctx" ] || ctx='--'
-    [ -n "$h5" ] || h5='--'
-    [ -n "$d7" ] || d7='--'
-    usage_chip="$(warn "$ctx") ctx:$(printf '%3s' "$ctx")% $(warn "$h5") 5h:$(printf '%3s' "$h5")% $(warn "$d7") w:$(printf '%3s' "$d7")% "
-  fi
-  printf '%s%s' "$usage_chip" "$host"
+  printf '%s' "$host"
 }
 
 clock_chip() {

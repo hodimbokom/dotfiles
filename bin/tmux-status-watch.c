@@ -46,7 +46,7 @@ static void on_fs(ConstFSEventStreamRef s, void *i, size_t n, void *paths, const
 {
   char **p = paths;
   size_t j;
-  int git = 0, sys = 0;
+  int git = 0;
 
   (void)s;
   (void)i;
@@ -55,22 +55,17 @@ static void on_fs(ConstFSEventStreamRef s, void *i, size_t n, void *paths, const
   for (j = 0; j < n; j++) {
     if (strstr(p[j], "/node_modules/") || strstr(p[j], "/.git/objects/"))
       continue;
-    if (strstr(p[j], "tmux-claude-usage"))
-      sys = 1;
-    else
-      git = 1;
+    git = 1;
   }
   if (git)
     run("git");
-  if (sys)
-    run("sys");
 }
 
 static void watch(void)
 {
-  char path[1024] = "", usage[512], key[1536];
+  char path[1024] = "";
   FILE *fp;
-  CFStringRef strs[2];
+  CFStringRef strs[1];
   CFArrayRef arr;
   int n = 0;
 
@@ -80,20 +75,18 @@ static void watch(void)
       path[strcspn(path, "\n")] = 0;
     pclose(fp);
   }
-  snprintf(usage, sizeof(usage), "%s/.cache/tmux-claude-usage", home);
-  snprintf(key, sizeof(key), "%s|%s", path, usage);
-  if (!strcmp(key, fs_key))
+  if (!strcmp(path, fs_key))
     return;
-  snprintf(fs_key, sizeof(fs_key), "%s", key);
+  snprintf(fs_key, sizeof(fs_key), "%s", path);
   if (fs) {
     FSEventStreamStop(fs);
     FSEventStreamInvalidate(fs);
     FSEventStreamRelease(fs);
     fs = NULL;
   }
-  if (path[0])
-    strs[n++] = CFStringCreateWithCString(NULL, path, kCFStringEncodingUTF8);
-  strs[n++] = CFStringCreateWithCString(NULL, usage, kCFStringEncodingUTF8);
+  if (!path[0])
+    return;
+  strs[n++] = CFStringCreateWithCString(NULL, path, kCFStringEncodingUTF8);
   arr = CFArrayCreate(NULL, (const void **)strs, n, &kCFTypeArrayCallBacks);
   while (n)
     CFRelease(strs[--n]);
