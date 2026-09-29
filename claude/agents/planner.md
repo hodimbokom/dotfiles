@@ -20,5 +20,8 @@ may be a single commit; do not invent extra slices. For each commit list:
 Commits must stack: after each one the tree should still typecheck and the feature so far should
 work. Later slices may edit files from earlier ones.
 
+Write the plan itself in English, regardless of what language the surrounding conversation is in —
+it describes commit subjects and technical detail that stay English either way.
+
 Return the plan as your result. Do not ask the user for approval yourself — the coordinator handles
 that via plan mode.
