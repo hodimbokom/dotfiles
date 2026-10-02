@@ -2,3 +2,7 @@ gui:
   nerdFontsVersion: "3"
 os:
   editPreset: nvim
+git:
+  diffRenderers:
+    - colorArg: always
+      command: delta --paging=never
