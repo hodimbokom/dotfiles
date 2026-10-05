@@ -27,7 +27,7 @@ When I explicitly ask you to commit:
 - One-line subject only. No description, no body after a blank line.
 - Prefer the subject from the approved plan for this slice.
 - Do not add `Co-Authored-By`, `Signed-off-by`, `Generated-by`, `Assisted-by`, or any Claude/Anthropic trailer.
-- Do not put the task name, Jira key, or tmux window name in the subject (`BAC-123`, `feat/BAC-123`). The branch already has it.
+- Do not put the task name, Jira key, or tmux window name in the subject (`PROJ-123`, `feat/PROJ-123`). The branch already has it.
 
 Do not write a PR description unless I ask for one.
 
@@ -42,7 +42,7 @@ not a neutral list of tradeoffs.
 
 Prefer the simplest change that fits the existing code over a clever or general one.
 
-Comments in code: only if they explain what the block does. One short sentence. No task keys, Jira numbers, ticket names, or "why we did this for BAC-…". No direct references to Figma node IDs/links or task names either.
+Comments in code: only if they explain what the block does. One short sentence. No task keys, Jira numbers, ticket names, or "why we did this for PROJ-…". No direct references to Figma node IDs/links or task names either.
 
 ## Outbound text (Jira, Slack, GitHub)
 

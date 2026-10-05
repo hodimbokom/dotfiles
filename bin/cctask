@@ -19,10 +19,10 @@ cctask — one task, one worktree, one tmux window.
 
   cctask main                    general window on the main checkout (no task branch)
   cctask dots                    separate session for ~/.config; Claude without subagents
-  cctask BAC-123                 create/reuse a worktree and tmux window for BAC-123
-  cctask BAC-123 feat/BAC-123    same, with an explicit branch name
+  cctask PROJ-123                create/reuse a worktree and tmux window for PROJ-123
+  cctask PROJ-123 feat/PROJ-123  same, with an explicit branch name
   cctask done                    remove the current worktree (branch and tmux stay)
-  cctask --dry-run BAC-123       print what would happen, change nothing
+  cctask --dry-run PROJ-123      print what would happen, change nothing
 
 Worktrees live in ~/.worktrees/<repo>/<task>, override with CCTASK_WORKTREE_ROOT.
 EOF
