@@ -3,19 +3,8 @@ command -v jq >/dev/null || exit 0
 input="$(cat)"
 
 dir="${XDG_CACHE_HOME:-$HOME/.cache}/claude-usage"
-[ -f "$dir" ] && rm -f "$dir"
 mkdir -p "$dir"
 
-cache_key() {
-  local top
-  top="$(
-    cd "$1" 2>/dev/null || exit 1
-    git rev-parse --show-toplevel 2>/dev/null || pwd -P
-  )" || top="$1"
-  printf '%s' "$top" | md5 -q
-}
-
-root="$(printf '%s' "$input" | jq -r '.workspace.project_dir // .cwd // empty')"
 eval "$(printf '%s' "$input" | jq -r '
   def n: if . == null then "" else (tonumber | floor | tostring) end;
   def t: if . == null then "" else tostring end;
@@ -31,16 +20,6 @@ if [ "$h5" = 0 ] && [ -n "$d7" ] && [ "$d7" != 0 ]; then
 fi
 if [ "$d7" = 0 ] && [ -n "$h5" ] && [ "$h5" != 0 ]; then
   d7=; d7r=
-fi
-
-if [ -n "$root" ]; then
-  ctxfile="$dir/c-$(cache_key "$root")"
-  old_ctx=
-  [ -f "$ctxfile" ] && old_ctx="$(grep -E '^ctx=' "$ctxfile" 2>/dev/null | cut -d= -f2-)"
-  [ -n "$ctx" ] || ctx="$old_ctx"
-  if [ -n "$ctx" ]; then
-    printf 'ctx=%s\n' "$ctx" > "$ctxfile.tmp.$$" && mv "$ctxfile.tmp.$$" "$ctxfile"
-  fi
 fi
 
 limits="$dir/limits"
