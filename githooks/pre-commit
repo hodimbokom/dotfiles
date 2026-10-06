@@ -66,8 +66,7 @@ pre-commit: the staged changes look like they contain a credential.
 This repository is public, and a pushed secret stays in the history even after
 you delete it, so rotate anything that has already left the machine.
 
-If this is a false positive, commit once with:
-  git commit --no-verify
+If this is a false positive, stop and tell the owner.
 EOF
   exit 1
 fi
