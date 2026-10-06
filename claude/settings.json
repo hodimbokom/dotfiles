@@ -81,6 +81,33 @@
     "refreshInterval": 15
   },
   "theme": "auto",
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "~/.config/bin/cctask-claude-state idle" }] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "command", "command": "~/.config/bin/cctask-claude-state running" }] }
+    ],
+    "PostToolUse": [
+      { "hooks": [{ "type": "command", "command": "~/.config/bin/cctask-claude-state running", "async": true }] }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt|elicitation_dialog",
+        "hooks": [{ "type": "command", "command": "~/.config/bin/cctask-claude-state wait" }]
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [{ "type": "command", "command": "~/.config/bin/cctask-claude-state idle" }]
+      }
+    ],
+    "Stop": [
+      { "hooks": [{ "type": "command", "command": "~/.config/bin/cctask-claude-state done" }] }
+    ],
+    "SessionEnd": [
+      { "hooks": [{ "type": "command", "command": "~/.config/bin/cctask-claude-state end" }] }
+    ]
+  },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true
   }

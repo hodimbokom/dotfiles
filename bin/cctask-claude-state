@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+# Called from Claude Code hooks: show the session state next to the tmux window name.
+[ -n "${TMUX_PANE:-}" ] || exit 0
+
+case "${1:-}" in
+  running) glyph=' #[fg=#f6c177]●' ;;
+  wait)    glyph=' #[fg=#eb6f92]?' ;;
+  done)    glyph=' #[fg=#9ccfd8]✓' ;;
+  idle)    glyph=' #[fg=#6e6a86]●' ;;
+  end)     tmux set-option -w -u -t "$TMUX_PANE" @cctask_claude 2>/dev/null; exit 0 ;;
+  *)       exit 0 ;;
+esac
+
+tmux set-option -w -t "$TMUX_PANE" @cctask_claude "$glyph" 2>/dev/null
+exit 0
