@@ -18,7 +18,7 @@ Install CLI tools, terminal, and font:
 
 ```sh
 brew install git tmux neovim ripgrep fd fzf jq gh lazygit bat eza starship \
-  zsh-syntax-highlighting zsh-autosuggestions reattach-to-user-namespace btop pyenv
+  zsh-syntax-highlighting zsh-autosuggestions reattach-to-user-namespace btop fnm zoxide
 brew install --cask alacritty font-jetbrains-mono-nerd-font
 ```
 
@@ -49,20 +49,20 @@ macOS + Homebrew. The rest is what this config actually runs.
 - tmux, `reattach-to-user-namespace`, btop
 - starship, `zsh-syntax-highlighting`, `zsh-autosuggestions`
 - neovim, ripgrep, fd, fzf, git, jq, gh, lazygit, bat, eza
-- pyenv (`.zshrc` always calls `pyenv init`)
+- fnm, zoxide (`.zshrc` runs `fnm env` and `zoxide init` on every start)
 - Claude Code CLI
 - Xcode Command Line Tools (`xcode-select --install`) — treesitter compiles parsers on first nvim launch
 
 **Needed for the cctask / Claude / nvim flow**, not for opening the terminal:
 
-- **nvm + a Node LTS.** Node is required: `npx` registers Playwright MCP, Mason installs `ts_ls`, `cctask` runs `pnpm`/`npm`/`yarn`/`bun` when a worktree has `package.json`.
+- **fnm + a Node LTS.** Node is required: `npx` registers Playwright MCP, Mason installs `ts_ls`, `cctask` runs `pnpm`/`npm`/`yarn`/`bun` when a worktree has `package.json`.
 
 ```sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install --lts
+fnm install --lts
+fnm default lts-latest
 ```
 
 - **pnpm / yarn / bun** — only if the project lockfile uses them. The dotfiles do not pin a package manager.
 - **gh** logged in (`gh auth login`) if you use GitHub from the bar/scripts.
 
-Rust/`cargo` is optional: `.zshenv` sources it when present. Python besides pyenv is not required by this repo.
+Rust/`cargo` is optional: `.zshenv` sources it when present. Python is not required by this repo.
