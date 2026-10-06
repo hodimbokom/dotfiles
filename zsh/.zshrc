@@ -50,7 +50,7 @@ alias dots='cctask dots'
 
 alias cat='bat --style=plain'
 alias ls='eza'
-alias env='env | sort | bat -l ini --style=plain'
+alias envs='env | sort | bat -l ini --style=plain'
 
 alias jqpp='jq -C . | less -R'
 
