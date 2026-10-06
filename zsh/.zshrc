@@ -49,7 +49,7 @@ alias tmuxl='tmux list-sessions'
 alias dots='cctask dots'
 
 alias cat='bat --style=plain'
-alias ls='eza'
+alias ls='eza -alg --git --icons --group-directories-first --time-style=long-iso'
 alias envs='env | sort | bat -l ini --style=plain'
 
 alias jqpp='jq -C . | less -R'
