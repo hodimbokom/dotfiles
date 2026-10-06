@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+# Background git status must not rewrite the index or take index.lock.
+export GIT_OPTIONAL_LOCKS=0
 
 set_if() {
   [ "$2" = "$(tmux show-options -gv "$1" 2>/dev/null)" ] && return
