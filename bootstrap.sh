@@ -63,6 +63,7 @@ link claude/agents/ui-validator.md         "$claude_home/agents/ui-validator.md"
 link claude/agents/researcher.md           "$claude_home/agents/researcher.md"
 link claude/agents/planner.md              "$claude_home/agents/planner.md"
 link claude/agents/ticket-triager.md       "$claude_home/agents/ticket-triager.md"
+link claude/agents/dotfiles-reviewer.md    "$claude_home/agents/dotfiles-reviewer.md"
 link claude/skills/log-note/SKILL.md       "$claude_home/skills/log-note/SKILL.md"
 link claude/skills/research/SKILL.md       "$claude_home/skills/research/SKILL.md"
 link claude/skills/plan/SKILL.md           "$claude_home/skills/plan/SKILL.md"
@@ -70,6 +71,7 @@ link claude/skills/implement/SKILL.md      "$claude_home/skills/implement/SKILL.
 link claude/skills/review/SKILL.md         "$claude_home/skills/review/SKILL.md"
 link claude/skills/validate/SKILL.md       "$claude_home/skills/validate/SKILL.md"
 link claude/skills/ticket-summary/SKILL.md "$claude_home/skills/ticket-summary/SKILL.md"
+link claude/skills/dotfiles-review/SKILL.md "$claude_home/skills/dotfiles-review/SKILL.md"
 
 obsidian_vault="$(cat "$repo/obsidian/vault-path.local" 2>/dev/null || true)"
 if [ -n "$obsidian_vault" ]; then
