@@ -5,37 +5,16 @@ macOS on Apple Silicon only.
 ## Install
 
 ```sh
-# Xcode CLT and Homebrew
-xcode-select --install
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+xcode-select --install   # wait for install dialog to finish
+git clone https://github.com/hodimbokom/dotfiles.git ~/.config && ~/.config/bootstrap.sh
+```
 
-# clone, point zsh at repo
-git clone https://github.com/hodimbokom/dotfiles.git ~/.config
-cat >> ~/.zshenv <<'EOF'
-export ZDOTDIR="$HOME/.config/zsh"
-eval "$(/opt/homebrew/bin/brew shellenv)"
-[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
-EOF
-source ~/.zshenv
+Then:
 
-# tools and font
-brew install git tmux neovim tree-sitter-cli ripgrep fd fzf jq gh lazygit git-delta bat eza \
-  starship zsh-syntax-highlighting zsh-autosuggestions reattach-to-user-namespace btop fnm zoxide
-brew install --cask font-jetbrains-mono-nerd-font
-brew install stylua prettier   # optional, format on save in nvim
-
-# node and claude
-fnm install --lts
-fnm default lts-latest
-curl -fsSL https://claude.ai/install.sh | bash
+```sh
 exec zsh -l
-
-# link configs, then log in to claude once and quit
-~/.config/bootstrap.sh
-claude
+claude                          # log in once, then quit
 ~/.config/claude/mcp-setup.sh
-git clone https://github.com/tmux-plugins/tmux-resurrect ~/.config/tmux/plugins/tmux-resurrect
-git clone https://github.com/tmux-plugins/tmux-continuum ~/.config/tmux/plugins/tmux-continuum
 gh auth login
 ```
 
@@ -47,13 +26,38 @@ xattr -dr com.apple.quarantine /Applications/Alacritty.app
 
 Put your git name and email in `~/.gitconfig`. Everything else for git, delta, bat, ripgrep and fd is read from `~/.config`.
 
-`bootstrap.sh` can be rerun. Replaced files go to `~/.local/state/dotfiles/backup-<timestamp>/`.
+## What bootstrap.sh does
+
+Safe to rerun. Steps in order:
+
+1. Installs Homebrew if missing, then runs `brew bundle --no-upgrade` on `Brewfile`.
+2. Adds `ZDOTDIR`, `brew shellenv` and cargo to `~/.zshenv` if `ZDOTDIR` is not there yet. This makes zsh read `.zshrc` from `~/.config/zsh`.
+3. Installs Node LTS through fnm and sets it as default.
+4. Installs Claude Code if `claude` is missing.
+5. Clones tmux-resurrect and tmux-continuum into `tmux/plugins`.
+6. Links Claude settings, agents and skills into `~/.claude`, writes `~/.claude/CLAUDE.md` with an import of `claude/baseline.md`, sets `core.hooksPath` to `githooks`. Replaced files go to `~/.local/state/dotfiles/backup-<timestamp>/`.
+7. Links Obsidian config if `obsidian/vault-path.local` exists.
+
+## What Brewfile installs
+
+`brew bundle` reads `Brewfile` and installs everything listed that is missing. Installed packages are skipped and not upgraded (`--no-upgrade`), so rerun is cheap. Nothing gets removed.
+
+| Group | Packages | Used for |
+|---|---|---|
+| shell | starship, zsh-syntax-highlighting, zsh-autosuggestions, fnm, zoxide | prompt, highlighting and suggestions, Node versions, `z` jumps. `.zshrc` loads all of them on every start. |
+| search and files | ripgrep, fd, fzf, bat, eza, jq, btop | search, fuzzy finder with file preview, `ls` and `cat` replacements, JSON, system monitor |
+| git | git, gh, lazygit, git-delta | git itself, GitHub CLI, TUI, diff pager (lazygit uses `delta`) |
+| tmux | tmux, reattach-to-user-namespace | multiplexer, macOS clipboard inside tmux |
+| nvim | neovim, tree-sitter-cli, stylua, prettier | editor, parser builds, formatters. Without stylua and prettier format on save is off. |
+| font | font-jetbrains-mono-nerd-font | JetBrainsMono Nerd Font for Alacritty and prompt icons |
+
+zsh is system-provided. Alacritty and Rust are not in `Brewfile`: Alacritty is installed by hand (above), cargo is picked up from `~/.cargo/env` if you have it. pnpm, yarn or bun only if a project lockfile needs them.
+
+nvim needs neovim >= 0.12 and tree-sitter-cli >= 0.26.1. Plugins, parsers and LSP servers install on first launch, about a minute.
 
 ## First run
 
-`nvim` installs plugins, parsers and LSP servers on first launch, about a minute. Then start `tmux`, or `cctask dots` (anywhere), or `cctask main` (in a git repo).
-
-nvim needs neovim >= 0.12 and tree-sitter-cli >= 0.26.1.
+Start `tmux`, or `cctask dots` (anywhere), or `cctask main` (in a git repo). First tmux start compiles `bin/tmux-status-watch` with clang.
 
 ## Local files
 

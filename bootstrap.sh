@@ -54,6 +54,32 @@ write_import() {
   echo "import $dest -> $src"
 }
 
+if ! command -v brew >/dev/null && [ ! -x /opt/homebrew/bin/brew ]; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+eval "$(/opt/homebrew/bin/brew shellenv)"
+brew bundle --no-upgrade --file="$repo/Brewfile"
+
+if ! grep -qs ZDOTDIR "$HOME/.zshenv"; then
+  cat >> "$HOME/.zshenv" <<'EOF'
+export ZDOTDIR="$HOME/.config/zsh"
+eval "$(/opt/homebrew/bin/brew shellenv)"
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+EOF
+  echo "write  ~/.zshenv"
+fi
+
+eval "$(fnm env)"
+fnm install --lts
+fnm default lts-latest
+
+export PATH="$HOME/.local/bin:$PATH"
+command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash
+
+for p in tmux-resurrect tmux-continuum; do
+  [ -d "$repo/tmux/plugins/$p" ] || git clone "https://github.com/tmux-plugins/$p" "$repo/tmux/plugins/$p"
+done
+
 mkdir -p "$claude_home/agents"
 write_import claude/baseline.md            "$claude_home/CLAUDE.md"
 link claude/settings.json                  "$claude_home/settings.json"
@@ -97,4 +123,4 @@ if [ -d "$repo/githooks" ] && git -C "$repo" rev-parse --git-dir >/dev/null 2>&1
 fi
 
 echo
-echo "Done. MCP servers are not linked; run claude/mcp-setup.sh to register them."
+echo "Done. Next: exec zsh -l, run claude and log in, then claude/mcp-setup.sh and gh auth login."
