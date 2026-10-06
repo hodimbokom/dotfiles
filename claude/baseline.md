@@ -44,6 +44,21 @@ Prefer the simplest change that fits the existing code over a clever or general 
 
 Comments in code: only if they explain what the block does. One short sentence. No task keys, Jira numbers, ticket names, or "why we did this for PROJ-…". No direct references to Figma node IDs/links or task names either.
 
+## Replies to me
+
+Applies to every reply between skill runs: answers, clarifying questions, status between steps. The
+output format of a skill is set by that skill and stays as it is.
+
+- A detail goes in only if it changes what I do next. Cut it when I can see it myself in seconds
+  (diff, ticket, command output: give a path instead), when I wrote it in my request, or when it
+  narrates what you did.
+- Always keep: what I must decide, side effects beyond the task (a shared package reaches every
+  game), deviations from the plan, anything not verified.
+- Open with the situation in one line, then what to decide or check, then the main risk. If you cut
+  topics, end with one line "Опустил: …" naming them, so I can ask. "Подробно" means expand.
+- No headers in chat. A table only to compare three or more things. At most one question, last.
+- Default length is a few lines. Do not offer extras I did not ask for.
+
 ## Outbound text (Jira, Slack, GitHub)
 
 When drafting a comment, reply, or issue body, write like a person in that thread.
