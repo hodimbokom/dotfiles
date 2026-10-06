@@ -80,5 +80,8 @@
     "command": "~/.config/bin/claude-statusline",
     "refreshInterval": 15
   },
-  "theme": "auto"
+  "theme": "auto",
+  "enabledPlugins": {
+    "clangd-lsp@claude-plugins-official": true
+  }
 }
