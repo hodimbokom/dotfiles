@@ -1,6 +1,6 @@
 This is the public `~/.config` dotfiles repo (tmux, nvim, zsh, Alacritty, cctask). Not the work product repo.
 
-Do the work yourself. Do not spawn subagents. Do not use Task or Agent.
+Do the work yourself. Spawn a subagent only when I ask for one or a skill does (`/dotfiles-review`).
 
 Reply in Russian. Do not translate code, paths, branches, or commands.
 Be direct. Prefer the smallest change. Do not commit or push unless I explicitly ask.

@@ -18,7 +18,7 @@ usage() {
 cctask — one task, one worktree, one tmux window.
 
   cctask main                    general window on the main checkout (no task branch)
-  cctask dots                    separate session for ~/.config; Claude without subagents
+  cctask dots                    separate session for ~/.config
   cctask PROJ-123                create/reuse a worktree and tmux window for PROJ-123
   cctask PROJ-123 feat/PROJ-123  same, with an explicit branch name
   cctask done                    remove the current worktree (branch and tmux stay)
@@ -199,8 +199,7 @@ if [ "$action" = dots ]; then
     echo "would ensure tmux session 'dotfiles' in $dir"
     exit 0
   fi
-  attach_window dotfiles main "$dir" \
-    "claude --disallowedTools Task,Agent"
+  attach_window dotfiles main "$dir"
   exit 0
 fi
 
