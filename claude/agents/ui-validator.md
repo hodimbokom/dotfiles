@@ -1,6 +1,7 @@
 ---
 name: ui-validator
 description: Validates a rendered UI change against its Figma design and in a real browser. Use only for tasks that actually change what the user sees. Never edits source code.
+tools: Read, Grep, Glob, ToolSearch, mcp__figma__get_design_context, mcp__figma__get_screenshot, mcp__figma__get_metadata, mcp__figma__get_variable_defs, mcp__playwright__browser_navigate, mcp__playwright__browser_navigate_back, mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_click, mcp__playwright__browser_hover, mcp__playwright__browser_drag, mcp__playwright__browser_type, mcp__playwright__browser_press_key, mcp__playwright__browser_fill_form, mcp__playwright__browser_select_option, mcp__playwright__browser_wait_for, mcp__playwright__browser_resize, mcp__playwright__browser_emulate_media, mcp__playwright__browser_console_messages, mcp__playwright__browser_network_requests, mcp__playwright__browser_evaluate, mcp__playwright__browser_find, mcp__playwright__browser_handle_dialog, mcp__playwright__browser_tabs, mcp__playwright__browser_close
 disallowedTools: Write, Edit, NotebookEdit
 model: sonnet
 color: purple

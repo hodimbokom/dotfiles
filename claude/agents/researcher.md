@@ -1,6 +1,7 @@
 ---
 name: researcher
 description: Gathers research context for a coding task — Jira, Figma, the personal notes vault, and the codebase — and returns acceptance criteria, scope, and risks. Never edits code. Dispatched by the research skill.
+tools: Read, Grep, Glob, Bash, ToolSearch, mcp__atlassian__getAccessibleAtlassianResources, mcp__atlassian__getJiraIssue, mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__executeRead, mcp__atlassian__discover, mcp__atlassian__getConfluenceContent, mcp__atlassian__searchConfluence, mcp__figma__get_design_context, mcp__figma__get_screenshot, mcp__figma__get_metadata, mcp__figma__get_variable_defs
 disallowedTools: Write, Edit, NotebookEdit
 model: opus
 color: green

@@ -1,6 +1,7 @@
 ---
 name: planner
 description: Turns research findings into a short implementation plan split into reviewable local commits. Never edits code. Dispatched by the plan skill after research is done.
+tools: Read, Grep, Glob
 disallowedTools: Write, Edit, NotebookEdit
 model: opus
 color: green
