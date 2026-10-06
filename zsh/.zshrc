@@ -58,9 +58,9 @@ alias jqpp='jq -C . | less -R'
 source ${HOMEBREW_PREFIX:-/opt/homebrew}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source ${HOMEBREW_PREFIX:-/opt/homebrew}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-export FZF_DEFAULT_COMMAND='fd --hidden --follow --exclude .git'
+export FZF_DEFAULT_COMMAND='fd --hidden --follow'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+export FZF_ALT_C_COMMAND='fd --type d --hidden --follow'
 export FZF_DEFAULT_OPTS='--layout=reverse --border --info=inline'
 export FZF_TMUX_OPTS='-p 80%,70%'
 export FZF_CTRL_T_OPTS='--preview "bat --style=plain --color=always {} 2>/dev/null || eza -alg {}"'
