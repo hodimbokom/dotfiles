@@ -1,6 +1,6 @@
 ---
 name: ticket-triager
-description: Triages one Jira ticket: estimates story points from the ticket plus the code and says whether it is ready to implement or has open questions. Read-only. Dispatched by the ticket-summary skill.
+description: Triages one Jira ticket. Estimates story points from the ticket plus the code and says whether it is ready to implement or has open questions. Read-only. Dispatched by the ticket-summary skill.
 tools: Read, Grep, Glob, ToolSearch, mcp__atlassian__getJiraIssue, mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__executeRead, mcp__atlassian__discover, mcp__atlassian__getConfluenceContent
 model: sonnet
 color: yellow

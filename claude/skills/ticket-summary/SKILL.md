@@ -1,6 +1,6 @@
 ---
 name: ticket-summary
-description: Summarize my Jira tickets in the current sprint: status, story points, and for tickets not started yet an SP estimate from the ticket plus the code and a verdict on whether each is ready to implement or has open questions. Use when the user asks for a ticket summary, what to pick up next, or whether a ticket is ready. With no args it covers every ticket assigned to me in the sprint. With a ticket key it covers only that ticket.
+description: Summarize my Jira tickets in the current sprint with status and story points, and for tickets not started yet an SP estimate from the ticket plus the code and a verdict on whether each is ready to implement or has open questions. Use when the user asks for a ticket summary, what to pick up next, or whether a ticket is ready. With no args it covers every ticket assigned to me in the sprint. With a ticket key it covers only that ticket.
 ---
 
 # ticket-summary
