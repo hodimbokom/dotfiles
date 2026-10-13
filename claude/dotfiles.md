@@ -11,7 +11,7 @@ This repo is public. A leaked secret stays in git history.
 
 Never add, commit, or paste: API keys, tokens, passwords, `.env`, `*.pem`/`*.key`, SSH keys, `~/.ssh`, `~/.npmrc`, `jira.env`, account IDs, private URLs.
 
-Machine-local only (already gitignored): `zsh/.zshrc.local`, `CLAUDE.local.md`.
+Machine-local only (already gitignored): `zsh/.zshrc.local`, `zsh/aliases.local`, `CLAUDE.local.md`.
 Name env vars (`$FOO`), never values.
 
 Do not read those files to "help". Do not `git commit --no-verify` (that skips `githooks/pre-commit` secret scan).
