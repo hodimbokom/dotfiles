@@ -1,3 +1,10 @@
+bindkey -v
+KEYTIMEOUT=10
+
+HISTSIZE=50000
+SAVEHIST=50000
+setopt inc_append_history hist_ignore_all_dups
+
 autoload -U compinit; compinit
 
 eval "$(fnm env --use-on-cd)"
@@ -49,7 +56,7 @@ alias tmuxl='tmux list-sessions'
 alias dots='cctask dots'
 
 alias cat='bat --style=plain'
-alias ls='eza -alg --git --icons --group-directories-first --time-style=long-iso'
+alias l='eza -alg --git --icons --group-directories-first --time-style=long-iso'
 alias envs='env | sort | bat -l ini --style=plain'
 
 alias jqpp='jq -C . | less -R'
@@ -83,9 +90,7 @@ autosuggest-tab() {
 zle -N autosuggest-tab
 typeset -ga ZSH_AUTOSUGGEST_IGNORE_WIDGETS
 ZSH_AUTOSUGGEST_IGNORE_WIDGETS+=(autosuggest-tab)
-bindkey -M emacs '^I' autosuggest-tab
 bindkey -M viins '^I' autosuggest-tab
 for seq in '^[[Z' '^[[27;2;9~' '^[[9;2u'; do
-  bindkey -M emacs "$seq" complete-word
   bindkey -M viins "$seq" complete-word
 done

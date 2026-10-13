@@ -31,7 +31,7 @@ Put your git name and email in `~/.gitconfig`. Everything else for git, delta, b
 Safe to rerun. Steps in order:
 
 1. Installs Homebrew if missing, then runs `brew bundle --no-upgrade` on `Brewfile`.
-2. Adds `ZDOTDIR`, `brew shellenv` and cargo to `~/.zshenv` if `ZDOTDIR` is not there yet. This makes zsh read `.zshrc` from `~/.config/zsh`.
+2. Adds `ZDOTDIR` and a line sourcing `zsh/.zshenv` (brew shellenv, cargo) to `~/.zshenv` if `ZDOTDIR` is not there yet. This makes zsh read `.zshrc` from `~/.config/zsh`.
 3. Installs Node LTS through fnm and sets it as default.
 4. Installs Claude Code if `claude` is missing.
 5. Clones tmux-resurrect and tmux-continuum into `tmux/plugins`.

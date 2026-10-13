@@ -63,8 +63,7 @@ brew bundle --no-upgrade --file="$repo/Brewfile"
 if ! grep -qs ZDOTDIR "$HOME/.zshenv"; then
   cat >> "$HOME/.zshenv" <<'EOF'
 export ZDOTDIR="$HOME/.config/zsh"
-eval "$(/opt/homebrew/bin/brew shellenv)"
-[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+. "$ZDOTDIR/.zshenv"
 EOF
   echo "write  ~/.zshenv"
 fi
